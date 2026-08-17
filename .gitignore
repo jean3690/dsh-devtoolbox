@@ -13,3 +13,5 @@ dist/
 
 # editor
 .DS_Store.playwright/
+
+.playwright/
