@@ -25,6 +25,21 @@ function strArg(v: unknown, fallback: string): string {
   return typeof v === 'string' && v !== '' ? v : fallback
 }
 
+/** Digest algorithms the file-hash tool supports. */
+export type HashAlgorithm = 'md5' | 'sha1' | 'sha256'
+
+/**
+ * Hash one file (pure; testable without the tool registry).
+ * @param abs - absolute file path.
+ * @param algo - digest algorithm.
+ * @returns the hex digest and byte count.
+ */
+export async function hashFile(abs: string, algo: HashAlgorithm): Promise<{ hex: string; bytes: number }> {
+  const data = await readFile(abs)
+  const hex = createHash(algo).update(data).digest('hex')
+  return { hex, bytes: data.length }
+}
+
 /** `toolbox_file_hash`: MD5/SHA-1/SHA-256 digest of a file. */
 export function fileHashTool(baseUrl: string | undefined): ToolDefinition {
   return defineTool({
@@ -51,16 +66,43 @@ export function fileHashTool(baseUrl: string | undefined): ToolDefinition {
       }],
     },
     async execute(args) {
-      const algo = strArg(args.algorithm, 'sha256')
+      const algo = strArg(args.algorithm, 'sha256') as HashAlgorithm
       if (algo !== 'md5' && algo !== 'sha1' && algo !== 'sha256') {
         throw new Error(`toolbox_file_hash: unsupported algorithm "${algo}" (md5 | sha1 | sha256)`)
       }
       const abs = resolvePath(baseUrl, strArg(args.path, ''))
-      const data = await readFile(abs)
-      const hex = createHash(algo).update(data).digest('hex')
-      return { algorithm: algo, hex, bytes: data.length }
+      const { hex, bytes } = await hashFile(abs, algo)
+      return { algorithm: algo, hex, bytes }
     },
   })
+}
+
+/** Encoding conversion directions for the file tool. */
+export type EncodeDirection = 'gbkToUtf8' | 'utf8ToGbk'
+
+/**
+ * Convert one file's text encoding (pure; testable without the tool registry).
+ * @param abs - absolute input path.
+ * @param direction - conversion direction.
+ * @param target - absolute output path (may equal `abs` to overwrite).
+ * @returns the written path and byte count.
+ */
+export async function convertFileEncoding(
+  abs: string,
+  direction: EncodeDirection,
+  target: string,
+): Promise<{ path: string; bytes: number }> {
+  const data = await readFile(abs)
+  let out: Uint8Array
+  if (direction === 'utf8ToGbk') {
+    const text = new TextDecoder('utf-8', { fatal: true }).decode(data)
+    out = encodeGbk(text)
+  } else {
+    const text = decodeGbk(data)
+    out = new TextEncoder().encode(text)
+  }
+  await writeFile(target, out)
+  return { path: target, bytes: out.length }
 }
 
 /** `toolbox_file_encode`: convert a file's encoding (GBK⇄UTF-8). */
@@ -90,20 +132,10 @@ export function fileEncodeTool(baseUrl: string | undefined): ToolDefinition {
       }],
     },
     async execute(args) {
-      const direction = strArg(args.direction, 'gbkToUtf8')
+      const direction = strArg(args.direction, 'gbkToUtf8') as EncodeDirection
       const abs = resolvePath(baseUrl, strArg(args.path, ''))
-      const data = await readFile(abs)
-      let out: Uint8Array
-      if (direction === 'utf8ToGbk') {
-        const text = new TextDecoder('utf-8', { fatal: true }).decode(data)
-        out = encodeGbk(text)
-      } else {
-        const text = decodeGbk(data)
-        out = new TextEncoder().encode(text)
-      }
       const target = args.output === undefined ? abs : resolvePath(baseUrl, strArg(args.output, ''))
-      await writeFile(target, out)
-      return { path: target, bytes: out.length }
+      return convertFileEncoding(abs, direction, target)
     },
   })
 }

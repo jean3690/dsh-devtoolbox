@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { sanitizeFileName, sanitizeSubdir } from '../src/service.ts'
-import { fileEncodeTool, fileHashTool } from '../src/hostTools.ts'
+import { convertFileEncoding, hashFile } from '../src/hostTools.ts'
 
 const dirs: string[] = []
 
@@ -41,15 +41,13 @@ describe('host file tools', () => {
     const dir = tmpDir()
     const file = join(dir, 'data.txt')
     writeFileSync(file, 'hello dsh-toolbox', 'utf8')
-    const tool = fileHashTool(dir)
-    const md5 = await tool.execute({ path: 'data.txt', algorithm: 'md5' })
+    const md5 = await hashFile(file, 'md5')
     // Known vector: md5('hello dsh-toolbox')
     expect(md5).toEqual({
-      algorithm: 'md5',
       hex: '8e998b264ce99fb1930b30d71bc3ec99',
       bytes: 17,
     })
-    const sha = await tool.execute({ path: 'data.txt', algorithm: 'sha256' })
+    const sha = await hashFile(file, 'sha256')
     expect(sha.hex).toHaveLength(64)
     expect(sha.bytes).toBe(17)
   })
@@ -58,14 +56,14 @@ describe('host file tools', () => {
     const dir = tmpDir()
     const gbk = join(dir, 'gbk.txt')
     const utf8 = join(dir, 'utf8.txt')
+    const backGbk = join(dir, 'back-gbk.txt')
     // '你好' in GBK bytes
     writeFileSync(gbk, Buffer.from([0xc4, 0xe3, 0xba, 0xc3]))
-    const tool = fileEncodeTool(dir)
-    const out = await tool.execute({ path: 'gbk.txt', direction: 'gbkToUtf8', output: 'utf8.txt' })
+    const out = await convertFileEncoding(gbk, 'gbkToUtf8', utf8)
     expect(out.path).toBe(utf8)
     expect(readFileSync(utf8, 'utf8')).toBe('你好')
     // utf8ToGbk round trip
-    const back = await tool.execute({ path: 'utf8.txt', direction: 'utf8ToGbk', output: 'back-gbk.txt' })
+    const back = await convertFileEncoding(utf8, 'utf8ToGbk', backGbk)
     expect(readFileSync(back.path)).toEqual(Buffer.from([0xc4, 0xe3, 0xba, 0xc3]))
   })
 })
