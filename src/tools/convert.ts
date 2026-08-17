@@ -1,7 +1,7 @@
 /**
  * Convert tools: RMB uppercase amount, color (HEX/RGB/HSL) conversion.
  *
- * @module dsh-toolbox/tools/convert
+ * @module dsh-devtoolbox/tools/convert
  */
 
 import type { ToolFn } from './index.ts'

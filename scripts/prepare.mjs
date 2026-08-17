@@ -1,5 +1,5 @@
 /**
- * dsh-toolbox build driver: tsc typecheck, tsdown bundle, and a small
+ * dsh-devtoolbox build driver: tsc typecheck, tsdown bundle, and a small
  * self-check that the built artifacts line up with package.json exports.
  */
 import { execSync } from 'node:child_process'
@@ -30,4 +30,4 @@ for (const [label, rel] of expected) {
   if (!existsSync(abs)) throw new Error(`missing build artifact: ${label} (${rel})`)
   console.log(`ok ${rel}`)
 }
-console.log('dsh-toolbox build complete')
+console.log('dsh-devtoolbox build complete')

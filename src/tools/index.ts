@@ -1,11 +1,11 @@
 /**
- * dsh-toolbox tool registry: the single catalog shared by all three faces —
+ * dsh-devtoolbox tool registry: the single catalog shared by all three faces —
  * the browser toolbox UI, the `/toolbox` host command, and the config-driven
  * agent tool registration. A tool is a pure function plus metadata; nothing
  * here touches the DOM, the filesystem, or the network, so the same code runs
  * identically in the web GUI and in the host process.
  *
- * @module dsh-toolbox/tools
+ * @module dsh-devtoolbox/tools
  */
 
 import { textTools } from './text.ts'

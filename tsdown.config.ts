@@ -1,8 +1,8 @@
 /**
- * Build faces for dsh-toolbox. The node half (src/index.ts + the hand-written
+ * Build faces for dsh-devtoolbox. The node half (src/index.ts + the hand-written
  * Typert host manifest src/typert.host.ts) is the host Loader entry; the
  * browser half (src/client/index.ts) is the client bundle the client-modules
- * node half serves under /plugins/dsh-toolbox/client.js.
+ * node half serves under /plugins/dsh-devtoolbox/client.js.
  *
  * The browser half follows the shell's client-bundle handshake exactly (the
  * official `packages/client/tsdown.client.ts` preset): a CJS bundle wrapped
@@ -19,7 +19,7 @@ import { defineConfig } from 'tsdown'
 import { transform } from 'lightningcss'
 
 /** Plugin id: the cordis.yml bare row name, the graph row id, and the stamped bundle id must all match. */
-const PLUGIN_ID = 'dsh-toolbox'
+const PLUGIN_ID = 'dsh-devtoolbox'
 
 /**
  * Module specifiers the shell shares into the frozen browser module table

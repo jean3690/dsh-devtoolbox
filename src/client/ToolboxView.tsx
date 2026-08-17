@@ -4,7 +4,7 @@
  * execution is local (the pure tool library runs in the browser); the only
  * host round trip is the optional "save to project" RPC.
  *
- * @module dsh-toolbox/client/ToolboxView
+ * @module dsh-devtoolbox/client/ToolboxView
  */
 
 import { useMemo, useState } from 'react'

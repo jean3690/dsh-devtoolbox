@@ -4,7 +4,7 @@
  * without pulling the host's tool-registry chain (dsh-tools / dsh-llm) into
  * the client.
  *
- * @module dsh-toolbox/present
+ * @module dsh-devtoolbox/present
  */
 
 import type { ToolResult } from './tools/index.ts'

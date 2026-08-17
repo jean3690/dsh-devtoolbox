@@ -10,7 +10,7 @@
  * - `/toolbox agent enable <id>` / `disable <id>` — the exact
  *   `cordis.patch.yml` line to apply (never edited for you).
  *
- * @module dsh-toolbox/command
+ * @module dsh-devtoolbox/command
  */
 
 import type { CommandDefinition } from '@deepseek-ai/dsh-commands'
@@ -38,7 +38,7 @@ export interface CommandMessages {
 }
 
 export const EN_MESSAGES: CommandMessages = {
-  header: count => `dsh-toolbox: ${count} local tools (data never leaves this machine)`,
+  header: count => `dsh-devtoolbox: ${count} local tools (data never leaves this machine)`,
   category: name => `## ${name}`,
   toolLine: (id, desc) => `- ${id} — ${desc}`,
   usage: 'Usage: /toolbox | /toolbox run <id> [key=value ...] | /toolbox agent | /toolbox agent enable|disable <id>',
@@ -53,7 +53,7 @@ export const EN_MESSAGES: CommandMessages = {
 }
 
 export const ZH_MESSAGES: CommandMessages = {
-  header: count => `dsh-toolbox：${count} 个本地工具（数据不出本机）`,
+  header: count => `dsh-devtoolbox：${count} 个本地工具（数据不出本机）`,
   category: name => `## ${name}`,
   toolLine: (id, desc) => `- ${id} — ${desc}`,
   usage: '用法：/toolbox | /toolbox run <id> [key=value ...] | /toolbox agent | /toolbox agent enable|disable <id>',
@@ -97,7 +97,7 @@ export function toolboxCommand(resolved: ResolvedConfig, language: CommandLangua
   const exposed = new Set(resolved.agentTools.includes('*') ? exposableIds(resolved) : resolved.agentTools)
   return {
     name: 'toolbox',
-    description: 'List and run dsh-toolbox local utilities (text/code/security/extract), and manage agent tool exposure',
+    description: 'List and run dsh-devtoolbox local utilities (text/code/security/extract), and manage agent tool exposure',
     input: { hint: '[run <id> key=value ...| agent [enable|disable <id>]]' },
     handler: async ({ rawInput }) => {
       const parsed = parseToolboxArgs(rawInput)

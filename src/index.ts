@@ -1,5 +1,5 @@
 /**
- * dsh-toolbox — a local toolbox for the DeepSeek Harness web GUI.
+ * dsh-devtoolbox — a local toolbox for the DeepSeek Harness web GUI.
  *
  * Host half: the `/toolbox` command (list/run tools, manage agent exposure),
  * config-driven agent tool registration (`agentTools` / `userTools`, so the
@@ -11,7 +11,7 @@
  * Function plugin — no default export (the Loader unwraps
  * `exports.default ?? exports`).
  *
- * @module dsh-toolbox
+ * @module dsh-devtoolbox
  */
 
 import type { Context } from '@deepseek-ai/cordis'
@@ -22,7 +22,7 @@ import { toolboxCommand } from './command.ts'
 import { buildAgentTools } from './agentTools.ts'
 import { ToolboxService } from './service.ts'
 
-export const name = 'dsh-toolbox'
+export const name = 'dsh-devtoolbox'
 
 /** Hard services: the tool registry. Everything else is optional. */
 export const inject = ['tools', 'loader']
@@ -55,12 +55,12 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
     scope.effect(() => {
       const disposers = defs.map(def => scope.tools.register(def))
       return () => { for (const dispose of disposers) dispose() }
-    }, `dsh-toolbox: ${defs.length} agent tool(s)`)
+    }, `dsh-devtoolbox: ${defs.length} agent tool(s)`)
   })
 
   // The /toolbox human command: only where a command registry is composed.
   ctx.inject(['commands'], (scope) => {
-    scope.effect(() => scope.commands.register(toolboxCommand(resolved, 'zh')), 'dsh-toolbox: /toolbox command')
+    scope.effect(() => scope.commands.register(toolboxCommand(resolved, 'zh')), 'dsh-devtoolbox: /toolbox command')
   })
 
   // Keep a reference so the service's fiber stays reachable (avoids

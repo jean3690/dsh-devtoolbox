@@ -2,7 +2,7 @@
  * Toolbox panel controller: open/close state with subscriptions, shared by
  * the sidebar entry (DOM row) and the center-column view (React tree).
  *
- * @module dsh-toolbox/client/controller
+ * @module dsh-devtoolbox/client/controller
  */
 
 export interface ToolboxSnapshot {

@@ -1,4 +1,4 @@
-# dsh-toolbox bundle patch: mounts the dual-face toolbox plugin row into the
+# dsh-devtoolbox bundle patch: mounts the dual-face toolbox plugin row into the
 # web profile roster. The node half (exports ".") runs in the host process
 # (/toolbox command + agent tool registration + file tools); the `dsh.client`
 # declaration in package.json makes the browser half (exports "./client",
@@ -6,8 +6,8 @@
 #
 # Activate with: dsh plugin --profile web add link:/home/jean/program/dsh-toolbox
 - insert:
-    - id: dsh-toolbox
-      name: dsh-toolbox
+    - id: dsh-devtoolbox
+      name: dsh-devtoolbox
       config:
         # Agent-visible tools (deterministic utilities the model can call in
         # conversation). Empty = expose none; '*' = expose all built-ins.

@@ -4,7 +4,7 @@
  * File names and subdirectories are sanitized (no path traversal), and the
  * service never touches any configuration file.
  *
- * @module dsh-toolbox/service
+ * @module dsh-devtoolbox/service
  */
 
 import { mkdir, writeFile } from 'node:fs/promises'
@@ -75,7 +75,7 @@ export class ToolboxService extends TypertRemoteService {
     // Defense in depth: resolved target must stay under the save dir.
     const root = this.saveDir.endsWith(sep) ? this.saveDir : this.saveDir + sep
     if (target !== this.saveDir && !target.startsWith(root)) {
-      throw new Error(`dsh-toolbox: refused to write outside the save directory: ${target}`)
+      throw new Error(`dsh-devtoolbox: refused to write outside the save directory: ${target}`)
     }
     const bytes = Buffer.byteLength(request.content, 'utf8')
     await writeFile(target, request.content, 'utf8')

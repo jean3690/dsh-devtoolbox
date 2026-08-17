@@ -2,7 +2,7 @@
  * Security tools: MD5 (pure TS), SHA-1/256/512 (WebCrypto), UUID v4,
  * random password, random numbers. All local, no network.
  *
- * @module dsh-toolbox/tools/security
+ * @module dsh-devtoolbox/tools/security
  */
 
 import type { ToolFn } from './index.ts'

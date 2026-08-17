@@ -3,7 +3,7 @@
  * timestamp. Rely only on globals (TextEncoder/TextDecoder, btoa/atob,
  * BigInt) so they run identically in browser and host.
  *
- * @module dsh-toolbox/tools/encode
+ * @module dsh-devtoolbox/tools/encode
  */
 
 import type { ToolFn } from './index.ts'

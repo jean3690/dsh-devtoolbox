@@ -1,5 +1,5 @@
 {
-  "name": "dsh-toolbox",
+  "name": "dsh-devtoolbox",
   "version": "0.1.0",
   "description": "DSH 工具箱插件：侧边栏独立页面 + /toolbox 命令 + 配置驱动的 agent 确定性工具。约 35 个纯本地工具（文本/编码/数据/安全/提取/转换/网络/效率），数据不出机器。参考 devtoolbox.online 设计。",
   "type": "module",

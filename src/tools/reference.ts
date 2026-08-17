@@ -3,7 +3,7 @@
  * Read-only built-in data with query support. Also the "life" category's
  * picker (random selection from a name list).
  *
- * @module dsh-toolbox/tools/reference
+ * @module dsh-devtoolbox/tools/reference
  */
 
 import type { ToolFn } from './index.ts'

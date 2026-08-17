@@ -18,10 +18,10 @@ import type { ToolboxController } from './controller.ts'
 import { ToolboxView } from './ToolboxView.tsx'
 
 /** The injected toolbox container (kept in the DOM, hidden when inactive). */
-export const TOOLBOX_VIEW_SELECTOR = '[data-dsh-toolbox-view]'
+export const TOOLBOX_VIEW_SELECTOR = '[data-dsh-devtoolbox-view]'
 
 const CONVERSATION_COLUMN_SELECTOR = '[data-pane="conversation"]'
-const ACTIVE_ATTR = 'data-dsh-toolbox-active'
+const ACTIVE_ATTR = 'data-dsh-devtoolbox-active'
 /** Sibling panels' activation attributes, removed when this panel opens. */
 const SIBLING_ACTIVE_ATTRS = ['data-dsh-taskboard-active', 'data-dsh-ssh-active']
 /** Cross-plugin activation event; detail is the activating panel name. */
@@ -54,11 +54,11 @@ export function mountToolboxView(
     if (column === undefined) return
     container = document.createElement('div')
     container.dataset.dshToolboxView = ''
-    // No className here: the `dsh-toolbox-root` layout class lives on the
+    // No className here: the `dsh-devtoolbox-root` layout class lives on the
     // React tree's own root div inside this container. Giving the host
     // container both a data attribute and the layout class would make
-    // `.dsh-toolbox-root { display: flex }` (same specificity, later in the
-    // sheet) override the `[data-dsh-toolbox-view] { display: none }`
+    // `.dsh-devtoolbox-root { display: flex }` (same specificity, later in the
+    // sheet) override the `[data-dsh-devtoolbox-view] { display: none }`
     // hide rule, so the view would stay painted over the conversation
     // forever — the "cannot return to chat" bug.
     column.appendChild(container)

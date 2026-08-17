@@ -5,7 +5,7 @@
  * deterministic utilities as `userTools` JS expressions. Every registered
  * tool is `toolbox_<name>`.
  *
- * @module dsh-toolbox/agentTools
+ * @module dsh-devtoolbox/agentTools
  */
 
 import type { ToolDefinition, ParameterSchemaSpec, JsonValue } from '@deepseek-ai/dsh-tools'
@@ -76,7 +76,7 @@ function builtinDefinition(toolId: string, lang: ToolboxLang): ToolDefinition | 
     .join(', ')
   return defineTool({
     name: `toolbox_${tool.id}`,
-    description: `[dsh-toolbox] ${lookup(lang, tool.descKey)}${argList === '' ? '' : ` (args: ${argList})`} Data stays local.`,
+    description: `[dsh-devtoolbox] ${lookup(lang, tool.descKey)}${argList === '' ? '' : ` (args: ${argList})`} Data stays local.`,
     parameters,
     output: {
       schema: RESULT_SCHEMA,
@@ -107,7 +107,7 @@ function userDefinition(spec: { name: string; description: string; args: Record<
   const fn = new Function('args', `"use strict"; return (${spec.run})(args)`) as (args: Record<string, unknown>) => unknown
   return defineTool({
     name: `toolbox_${spec.name}`,
-    description: `[dsh-toolbox user] ${spec.description}`,
+    description: `[dsh-devtoolbox user] ${spec.description}`,
     parameters,
     output: {
       schema: {

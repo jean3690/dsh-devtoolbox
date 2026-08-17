@@ -20,7 +20,7 @@ import { ICON_SVG } from './icon.ts'
 import styles from './toolbox.module.css'
 
 /** Stable data attribute identifying the injected entry row. */
-export const ENTRY_SELECTOR = '[data-dsh-toolbox-entry]'
+export const ENTRY_SELECTOR = '[data-dsh-devtoolbox-entry]'
 
 /** Family rows injected by sibling plugins (kept in stable relative order). */
 const FAMILY_SELECTOR = '[data-dsh-taskboard-entry], [data-dsh-ssh-entry]'

@@ -84,7 +84,7 @@ declare const SAVE_RESULT_SCHEMA: ZodObject<{
  * contribution (`src/client/remote.ts`).
  */
 declare const TOOLBOX_SAVE_DESCRIPTOR: Readonly<{
-  readonly id: "dsh-toolbox#toolbox/save";
+  readonly id: "dsh-devtoolbox#toolbox/save";
   readonly service: "toolbox";
   readonly namespace: "toolbox";
   readonly method: "save";
@@ -97,7 +97,7 @@ declare const TOOLBOX_SAVE_DESCRIPTOR: Readonly<{
     source: "json";
     codec: Readonly<{
       mode: "strict";
-      typeSymbol: "dsh-toolbox/types#SaveRequest";
+      typeSymbol: "dsh-devtoolbox/types#SaveRequest";
       schema: ZodObject<{
         fileName: ZodString;
         content: ZodString;
@@ -107,7 +107,7 @@ declare const TOOLBOX_SAVE_DESCRIPTOR: Readonly<{
   }>[];
   readonly result: Readonly<{
     mode: "strict";
-    typeSymbol: "dsh-toolbox/types#SaveResult";
+    typeSymbol: "dsh-devtoolbox/types#SaveResult";
     schema: ZodObject<{
       path: ZodString;
       bytes: ZodNumber;
@@ -122,7 +122,7 @@ declare const TOOLBOX_SAVE_DESCRIPTOR: Readonly<{
 }>;
 /** The canonical invocation list both Typert faces register. */
 declare const TOOLBOX_INVOCATIONS: readonly Readonly<{
-  readonly id: "dsh-toolbox#toolbox/save";
+  readonly id: "dsh-devtoolbox#toolbox/save";
   readonly service: "toolbox";
   readonly namespace: "toolbox";
   readonly method: "save";
@@ -135,7 +135,7 @@ declare const TOOLBOX_INVOCATIONS: readonly Readonly<{
     source: "json";
     codec: Readonly<{
       mode: "strict";
-      typeSymbol: "dsh-toolbox/types#SaveRequest";
+      typeSymbol: "dsh-devtoolbox/types#SaveRequest";
       schema: ZodObject<{
         fileName: ZodString;
         content: ZodString;
@@ -145,7 +145,7 @@ declare const TOOLBOX_INVOCATIONS: readonly Readonly<{
   }>[];
   readonly result: Readonly<{
     mode: "strict";
-    typeSymbol: "dsh-toolbox/types#SaveResult";
+    typeSymbol: "dsh-devtoolbox/types#SaveResult";
     schema: ZodObject<{
       path: ZodString;
       bytes: ZodNumber;
@@ -233,13 +233,13 @@ declare function toolboxCommand(resolved: ResolvedConfig, language?: CommandLang
 //#endregion
 //#region src/i18n.d.ts
 /**
- * dsh-toolbox shared dictionaries: tool names/descriptions, category names,
+ * dsh-devtoolbox shared dictionaries: tool names/descriptions, category names,
  * and UI copy, in zh + en. One source shared by the browser toolbox view,
  * the `/toolbox` command output, and the agent tool descriptions (so the
  * model never sees raw locale keys). Dependency-free — no DOM, no dsh
  * locale service.
  *
- * @module dsh-toolbox/i18n
+ * @module dsh-devtoolbox/i18n
  */
 type ToolboxLang = 'zh' | 'en';
 //#endregion
@@ -333,13 +333,13 @@ declare const referenceTools: readonly ToolFn[];
 //#endregion
 //#region src/tools/index.d.ts
 /**
- * dsh-toolbox tool registry: the single catalog shared by all three faces —
+ * dsh-devtoolbox tool registry: the single catalog shared by all three faces —
  * the browser toolbox UI, the `/toolbox` host command, and the config-driven
  * agent tool registration. A tool is a pure function plus metadata; nothing
  * here touches the DOM, the filesystem, or the network, so the same code runs
  * identically in the web GUI and in the host process.
  *
- * @module dsh-toolbox/tools
+ * @module dsh-devtoolbox/tools
  */
 /** Tool argument declaration (JSON-schema-ish, kept minimal). */
 interface ToolArgSpec {
@@ -428,7 +428,7 @@ declare function fileHashTool(baseUrl: string | undefined): ToolDefinition;
 declare function fileEncodeTool(baseUrl: string | undefined): ToolDefinition;
 //#endregion
 //#region src/index.d.ts
-declare const name = "dsh-toolbox";
+declare const name = "dsh-devtoolbox";
 /** Hard services: the tool registry. Everything else is optional. */
 declare const inject: string[];
 /**

@@ -1,11 +1,11 @@
 /**
- * dsh-toolbox, browser half: mounts the `toolbox` Remote contribution, then
+ * dsh-devtoolbox, browser half: mounts the `toolbox` Remote contribution, then
  * injects the sidebar entry row and the center-column toolbox view (DOM-level
  * surfaces following the task-board precedent). Failure policy: DOM mounting
  * problems are logged, never thrown — an external plugin must not take the
  * web GUI down.
  *
- * @module dsh-toolbox/client
+ * @module dsh-devtoolbox/client
  */
 
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
@@ -32,7 +32,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 export const NS = 'toolbox'
 
 /** Plugin name: matches the package name, the graph row id, and the bundle id. */
-export const name = 'dsh-toolbox'
+export const name = 'dsh-devtoolbox'
 
 /** Services the surfaces read; `remote.toolbox` appears once this plugin mounts its contribution. */
 export const inject = ['slots', 'locale', 'remote']
@@ -44,7 +44,7 @@ export const inject = ['slots', 'locale', 'remote']
  * @param ctx - client root context.
  */
 export async function apply(ctx: ClientContext): Promise<void> {
-  ctx.effect(() => ctx.locale.register(NS, { zh: ZH, en: EN }), 'dsh-toolbox: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { zh: ZH, en: EN }), 'dsh-devtoolbox: dictionaries')
 
   // $mount registers the 'remote.toolbox' namespace service and owns its
   // removal for this fiber's lifetime.
@@ -63,10 +63,10 @@ export async function apply(ctx: ClientContext): Promise<void> {
     }))
   } catch (error) {
     // DOM failures degrade the toolbox, never the GUI.
-    console.error('[dsh-toolbox] mount failed:', error)
+    console.error('[dsh-devtoolbox] mount failed:', error)
   }
 
   ctx.effect(() => () => {
     for (const dispose of disposers.splice(0)) dispose()
-  }, 'dsh-toolbox: surfaces')
+  }, 'dsh-devtoolbox: surfaces')
 }

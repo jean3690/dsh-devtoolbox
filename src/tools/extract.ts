@@ -2,7 +2,7 @@
  * Extract tools: phone numbers (CN), emails, URLs, IPs. Batch + dedup +
  * counts; pure regex over the input text.
  *
- * @module dsh-toolbox/tools/extract
+ * @module dsh-devtoolbox/tools/extract
  */
 
 import type { ToolFn } from './index.ts'

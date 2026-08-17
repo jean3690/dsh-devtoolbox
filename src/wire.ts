@@ -1,5 +1,5 @@
 /**
- * dsh-toolbox wire vocabulary: the `toolbox` Remote namespace types, zod v4
+ * dsh-devtoolbox wire vocabulary: the `toolbox` Remote namespace types, zod v4
  * schemas (the strict codec both Typert faces carry), and the shared
  * invocation descriptors. One canonical source for host and client keeps the
  * two wire codecs from ever drifting apart.
@@ -8,7 +8,7 @@
  * into the browser half), so the wire carries exactly one host capability:
  * saving an output into the profile's save directory.
  *
- * @module dsh-toolbox/wire
+ * @module dsh-devtoolbox/wire
  */
 
 import { z } from 'zod'
@@ -54,7 +54,7 @@ export const SAVE_RESULT_SCHEMA = z.object({
  * contribution (`src/client/remote.ts`).
  */
 export const TOOLBOX_SAVE_DESCRIPTOR = Object.freeze({
-  id: 'dsh-toolbox#toolbox/save',
+  id: 'dsh-devtoolbox#toolbox/save',
   service: 'toolbox',
   namespace: 'toolbox',
   method: 'save',
@@ -66,14 +66,14 @@ export const TOOLBOX_SAVE_DESCRIPTOR = Object.freeze({
       source: 'json',
       codec: Object.freeze({
         mode: 'strict',
-        typeSymbol: 'dsh-toolbox/types#SaveRequest',
+        typeSymbol: 'dsh-devtoolbox/types#SaveRequest',
         schema: SAVE_REQUEST_SCHEMA,
       }),
     } satisfies InvocationDescriptor['parameters'][number]),
   ]),
   result: Object.freeze({
     mode: 'strict',
-    typeSymbol: 'dsh-toolbox/types#SaveResult',
+    typeSymbol: 'dsh-devtoolbox/types#SaveResult',
     schema: SAVE_RESULT_SCHEMA,
   }),
   sourceLocation: Object.freeze({ file: 'src/wire.ts', line: 1, column: 1 }),

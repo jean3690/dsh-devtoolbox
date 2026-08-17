@@ -1,5 +1,5 @@
 /**
- * dsh-toolbox styles as CSS Modules (web-styling.md alignment): component
+ * dsh-devtoolbox styles as CSS Modules (web-styling.md alignment): component
  * styles are local classes compiled to hashed names; the center-column
  * takeover rules are plugin-owned global rules scoped by our own data
  * attributes and wrapped in :global. Colors use only the ui-theme
@@ -8,7 +8,7 @@
  * Font sizes are paired with line heights; interactive controls expose
  * :focus-visible outlines.
  *
- * @module dsh-toolbox/client/toolbox.module.css
+ * @module dsh-devtoolbox/client/toolbox.module.css
  */
 
 /* --- center-column takeover (global rules, attribute-scoped) ----------------- */
@@ -17,11 +17,11 @@
 }
 
 /* The toolbox container rides inside the conversation grid item as an extra
-   trailing child; hidden unless the toolbox is active. The `dsh-toolbox-root`
+   trailing child; hidden unless the toolbox is active. The `dsh-devtoolbox-root`
    layout class lives on the React tree's own root div inside this container
    — never on the host container — so the hide rule below cannot be defeated
    by the layout class. */
-:global([data-dsh-toolbox-view]) {
+:global([data-dsh-devtoolbox-view]) {
   position: absolute;
   inset: 0;
   display: none;
@@ -30,7 +30,7 @@
   overflow: hidden;
 }
 
-:global(html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-toolbox-view]) {
+:global(html[data-dsh-devtoolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-devtoolbox-view]) {
   display: flex;
   flex-direction: column;
 }
@@ -38,8 +38,8 @@
 /* While the toolbox is active, hide the conversation subtree underneath
    (it stays mounted and stateful). !important beats the shell's inline
    display: contents wrapper. */
-:global(html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-pane='conversation'] > :not([data-dsh-toolbox-view])),
-:global(html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [class*='centerCol'] > :not([data-dsh-toolbox-view])) {
+:global(html[data-dsh-devtoolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-pane='conversation'] > :not([data-dsh-devtoolbox-view])),
+:global(html[data-dsh-devtoolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [class*='centerCol'] > :not([data-dsh-devtoolbox-view])) {
   display: none !important;
 }
 

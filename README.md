@@ -1,4 +1,4 @@
-# dsh-toolbox
+# dsh-devtoolbox
 
 **DSH 本地工具箱插件**：侧边栏独立页面 + `/toolbox` 命令 + 配置驱动的 agent 确定性工具。
 约 35 个纯本地小工具（文本 / 编码 / 数据 / 安全 / 提取 / 转换 / 参考 / 效率），
@@ -19,7 +19,7 @@
 ## 快速上手
 
 ```sh
-dsh plugin --profile web add link:/path/to/dsh-toolbox
+dsh plugin --profile web add link:/path/to/dsh-devtoolbox
 ```
 
 重启 web 面板（bundle 列表在启动时快照），侧边栏出现「工具箱」入口：
@@ -34,8 +34,8 @@ dsh plugin --profile web add link:/path/to/dsh-toolbox
 
 ```yaml
 - insert:
-    - id: dsh-toolbox
-      name: dsh-toolbox
+    - id: dsh-devtoolbox
+      name: dsh-devtoolbox
       config:
         # 暴露给模型的内置工具；'*' = 全部，[] = 不暴露（默认）
         agentTools: ['json_format', 'base64', 'md5']

@@ -4,7 +4,7 @@
  * declaration merging that types `ctx.remote.toolbox`. The descriptor list
  * is shared with the host `./typert` manifest (`../wire.ts`).
  *
- * @module dsh-toolbox/client/remote
+ * @module dsh-devtoolbox/client/remote
  */
 
 import type { RemoteResult, TypertRemoteContribution } from '@deepseek-ai/dsh-typert-protocol'
@@ -26,6 +26,6 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
 
 /** The client Remote contribution for the `toolbox` namespace. */
 export const TOOLBOX_REMOTE = Object.freeze({
-  package: 'dsh-toolbox',
+  package: 'dsh-devtoolbox',
   descriptors: TOOLBOX_INVOCATIONS,
 } satisfies TypertRemoteContribution)

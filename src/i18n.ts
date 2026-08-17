@@ -1,11 +1,11 @@
 /**
- * dsh-toolbox shared dictionaries: tool names/descriptions, category names,
+ * dsh-devtoolbox shared dictionaries: tool names/descriptions, category names,
  * and UI copy, in zh + en. One source shared by the browser toolbox view,
  * the `/toolbox` command output, and the agent tool descriptions (so the
  * model never sees raw locale keys). Dependency-free — no DOM, no dsh
  * locale service.
  *
- * @module dsh-toolbox/i18n
+ * @module dsh-devtoolbox/i18n
  */
 
 export type ToolboxLang = 'zh' | 'en'

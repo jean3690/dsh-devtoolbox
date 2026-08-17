@@ -6,7 +6,7 @@
  *
  * Relative paths resolve against the profile root (ctx.baseUrl).
  *
- * @module dsh-toolbox/hostTools
+ * @module dsh-devtoolbox/hostTools
  */
 
 import { createHash } from 'node:crypto'

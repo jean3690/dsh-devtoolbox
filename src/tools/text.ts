@@ -2,7 +2,7 @@
  * Text tools: statistics, cleaning, case/name conversion, CJK conversion.
  * All pure functions — no DOM, no fs, no network.
  *
- * @module dsh-toolbox/tools/text
+ * @module dsh-devtoolbox/tools/text
  */
 
 import type { ToolFn } from './index.ts'

@@ -1,7 +1,7 @@
 /**
  * Data tools: JSON format/validate, JSON⇄CSV, CSV encoding repair, line diff.
  *
- * @module dsh-toolbox/tools/data
+ * @module dsh-devtoolbox/tools/data
  */
 
 import type { ToolFn } from './index.ts'
