@@ -100,7 +100,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "watch": "tsdown --watch"
+    "watch": "tsdown --watch",
+    "prepublishOnly": "npm run build"
   },
   "license": "Apache-2.0"
 }

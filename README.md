@@ -94,12 +94,23 @@ CSS Modules + 哈希类名（`toolbox.module.css`，lightningcss 编译，运行
 
 ```sh
 npm install          # 安装依赖
-npm test             # vitest：33 个工具测试（含 MD5/SHA 测试向量）
+npm test             # vitest：37 个测试（工具测试含 MD5/SHA 测试向量 + 宿主文件工具/路径消毒）
 npm run build        # tsc + tsdown → lib/（node 半 ESM + client 半 ModuleLoader 单文件）
+bash scripts/smoke-e2e.mjs.sh   # Playwright 端到端回归（需 GUI 运行中 + playwright-cli）
 ```
 
 client bundle 遵循 shell 的 `window.__ModuleLoader__.load({ id, factory })` 握手：
 平台模块（react 等）external、其余全部内联，因此 `/plugins/<id>/client.js` 是单文件。
+
+## 发布
+
+GitHub Actions 已配置（typecheck + test + build）。发布 npm（推荐，安装免构建授权）：
+
+```sh
+npm publish    # prepublishOnly 自动先跑 build
+```
+
+> npm 包名 `dsh-toolbox` / `dsh-tools` 已被占用，本项目使用 `dsh-devtoolbox`。
 
 ## 诚实契约
 
