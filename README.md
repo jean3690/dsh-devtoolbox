@@ -17,6 +17,21 @@
 | **agent 工具** | **配置驱动**：`agentTools` 决定哪些 `toolbox_*` 工具对模型可见（默认一个都不暴露）；`userTools` 让你用 JS 表达式自定义自己的工具 |
 | **文件工具** | `toolbox_file_hash` / `toolbox_file_encode`（GBK⇄UTF-8）——需要时在配置中启用 |
 
+## 工具清单（35 个，全部本地运行）
+
+| 分类 | 工具 id |
+|---|---|
+| 文本 | `text_stats` `text_remove_blank` `text_dedup` `case_change` `case_convert` `fullwidth` `cn_convert` `regex` `text_ops` |
+| 编码 | `base64` `url` `html_entity` `unicode_escape` `radix` `timestamp` |
+| 数据 | `json_format` `json_csv` `csv_fix` `text_diff` |
+| 安全 | `md5` `sha` `uuid` `password` `random_num` |
+| 提取 | `phone` `email` `url_extract` `ip_extract` |
+| 转换 | `money` `color` |
+| 参考 | `http_codes` `ports` `mime` `ascii` |
+| 效率 | `picker` |
+
+宿主文件工具：`file_hash` `file_encode`（agent 可暴露，见配置）。
+
 ## 快速上手
 
 ```sh
