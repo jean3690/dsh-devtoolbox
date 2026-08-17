@@ -83,6 +83,12 @@ src/
 **面板互斥**：与任务看板 / SSH 面板共用 `dsh-panel-activate` 事件协议，中心列
 同一时刻只有一个面板占用。
 
+**样式规范对齐**（[web-styling.md](docs/upstream/upstream-web-styling.zh.md)）：
+CSS Modules + 哈希类名（`toolbox.module.css`，lightningcss 编译，运行时注入
+`<style data-plugin>`，与官方 client 包同机制）；颜色只用 ui-theme 的
+`--dsw-alias-*` 语义 token（无静态色板值、无颜色字面量、无主题选择器）；
+字体大小与行高配对；交互控件带 `:focus-visible` 焦点轮廓。
+
 ## 开发
 
 ```sh

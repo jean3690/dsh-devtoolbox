@@ -55,13 +55,15 @@
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
     "@deepseek-ai/cordis-plugin-loader": "^1.0.2",
-    "@deepseek-ai/schemastery": "^3.18.0",
     "@deepseek-ai/dsh-commands": "0.1.0-rc.6",
     "@deepseek-ai/dsh-jobs": "0.1.0-rc.6",
     "@deepseek-ai/dsh-tools": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-typert-protocol": "0.1.0-rc.6"
+    "@deepseek-ai/dsh-typert-protocol": "0.1.0-rc.6",
+    "@deepseek-ai/schemastery": "^3.18.0"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
+    "lightningcss": "^1.32.0",
     "opencc-js": "^1.0.5",
     "zod": "^4.4.3"
   },

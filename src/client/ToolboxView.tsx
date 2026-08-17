@@ -12,6 +12,7 @@ import type { ToolboxController } from './controller.ts'
 import { CATEGORIES, TOOLS, coerceArgs, type CategoryId, type ToolFn, type ToolResult } from '../tools/index.ts'
 import { renderResultText } from '../present.ts'
 import { lookup, currentLang, type ToolboxLang } from '../i18n.ts'
+import styles from './toolbox.module.css'
 
 /** The save RPC as the view needs it (undefined = host half unavailable). */
 export type SaveFn = (request: { fileName: string; content: string; subdir?: string }) => Promise<{ path: string }>
@@ -48,22 +49,22 @@ export function ToolboxView({ controller, save }: ToolboxViewProps): JSX.Element
   })
 
   return (
-    <div className="dsh-toolbox-root">
-      <div className="dsh-toolbox-header">
-        <button type="button" className="dsh-toolbox-back" onClick={close}>{t('view.close')}</button>
-        <span className="dsh-toolbox-title">{t('view.title')}</span>
-        <span className="dsh-toolbox-subtitle">{t('view.subtitle')}</span>
+    <div className={styles.root}>
+      <div className={styles.header}>
+        <button type="button" className={styles.back} onClick={close}>{t('view.close')}</button>
+        <span className={styles.title}>{t('view.title')}</span>
+        <span className={styles.subtitle}>{t('view.subtitle')}</span>
         <input
-          className="dsh-toolbox-search"
+          className={styles.search}
           placeholder={t('view.search')}
           value={query}
           onChange={event => setQuery(event.target.value)}
         />
       </div>
-      <div className="dsh-toolbox-cats">
+      <div className={styles.cats}>
         <button
           type="button"
-          className="dsh-toolbox-cat"
+          className={styles.cat}
           data-active={category === 'all' ? 'true' : undefined}
           onClick={() => setCategory('all')}
         >
@@ -73,7 +74,7 @@ export function ToolboxView({ controller, save }: ToolboxViewProps): JSX.Element
           <button
             key={cat.id}
             type="button"
-            className="dsh-toolbox-cat"
+            className={styles.cat}
             data-active={category === cat.id ? 'true' : undefined}
             onClick={() => setCategory(cat.id)}
           >
@@ -81,20 +82,20 @@ export function ToolboxView({ controller, save }: ToolboxViewProps): JSX.Element
           </button>
         ))}
       </div>
-      <div className="dsh-toolbox-grid">
-        {visible.length === 0 && <div className="dsh-toolbox-empty">{t('view.empty')}</div>}
+      <div className={styles.grid}>
+        {visible.length === 0 && <div className={styles.empty}>{t('view.empty')}</div>}
         {visible.map(tool => (
           <button
             key={tool.id}
             type="button"
-            className="dsh-toolbox-card"
+            className={styles.card}
             onClick={() => setSelectedId(tool.id)}
           >
-            <span className="dsh-toolbox-cardName">
-              <span className="dsh-toolbox-entryIcon">{categoryIcon(tool.category)}</span>
+            <span className={styles.cardName}>
+              <span className={styles.entryIcon}>{categoryIcon(tool.category)}</span>
               {lookup(lang, tool.nameKey)}
             </span>
-            <span className="dsh-toolbox-cardDesc">{lookup(lang, tool.descKey)}</span>
+            <span className={styles.cardDesc}>{lookup(lang, tool.descKey)}</span>
           </button>
         ))}
       </div>
@@ -210,23 +211,23 @@ function ToolPage({ tool, lang, save, onBack }: ToolPageProps): JSX.Element {
   const otherArgs = Object.entries(tool.args).filter(([name]) => name !== textArg?.[0])
 
   return (
-    <div className="dsh-toolbox-root">
-      <div className="dsh-toolbox-header">
-        <button type="button" className="dsh-toolbox-back" onClick={onBack}>{t('view.back')}</button>
-        <span className="dsh-toolbox-title">{lookup(lang, tool.nameKey)}</span>
-        <span className="dsh-toolbox-subtitle">{tool.id}</span>
+    <div className={styles.root}>
+      <div className={styles.header}>
+        <button type="button" className={styles.back} onClick={onBack}>{t('view.back')}</button>
+        <span className={styles.title}>{lookup(lang, tool.nameKey)}</span>
+        <span className={styles.subtitle}>{tool.id}</span>
       </div>
-      <div className="dsh-toolbox-page">
-        <div className="dsh-toolbox-pageDesc">{lookup(lang, tool.descKey)}</div>
+      <div className={styles.page}>
+        <div className={styles.pageDesc}>{lookup(lang, tool.descKey)}</div>
 
         {textArg !== undefined && (
-          <div className="dsh-toolbox-field">
-            <label className="dsh-toolbox-fieldLabel" htmlFor={`tb-${tool.id}-text`}>
+          <div className={styles.field}>
+            <label className={styles.fieldLabel} htmlFor={`tb-${tool.id}-text`}>
               {tool.textPayload === true ? t('page.textPayload') : textArg[1].description ?? textArg[0]}
             </label>
             <textarea
               id={`tb-${tool.id}-text`}
-              className="dsh-toolbox-input"
+              className={styles.input}
               rows={8}
               value={String(values[textArg[0]] ?? '')}
               onChange={event => setField(textArg[0], event.target.value)}
@@ -235,9 +236,9 @@ function ToolPage({ tool, lang, save, onBack }: ToolPageProps): JSX.Element {
         )}
 
         {otherArgs.map(([name, spec]) => (
-          <div key={name} className="dsh-toolbox-field">
+          <div key={name} className={styles.field}>
             {spec.type === 'boolean' ? (
-              <label className="dsh-toolbox-check">
+              <label className={styles.check}>
                 <input
                   type="checkbox"
                   checked={values[name] === true}
@@ -247,12 +248,12 @@ function ToolPage({ tool, lang, save, onBack }: ToolPageProps): JSX.Element {
               </label>
             ) : (
               <>
-                <label className="dsh-toolbox-fieldLabel" htmlFor={`tb-${tool.id}-${name}`}>
+                <label className={styles.fieldLabel} htmlFor={`tb-${tool.id}-${name}`}>
                   {name}{spec.required ? ' *' : ''} — {spec.description ?? ''}
                 </label>
                 <input
                   id={`tb-${tool.id}-${name}`}
-                  className={`dsh-toolbox-input dsh-toolbox-inputSmall`}
+                  className={`${styles.input} ${styles.inputSmall}`}
                   type={spec.type === 'number' ? 'number' : 'text'}
                   value={String(values[name] ?? '')}
                   onChange={event => setField(name, spec.type === 'number' ? event.target.value : event.target.value)}
@@ -262,27 +263,27 @@ function ToolPage({ tool, lang, save, onBack }: ToolPageProps): JSX.Element {
           </div>
         ))}
 
-        <button type="button" className="dsh-toolbox-run" onClick={() => void run()} disabled={running}>
+        <button type="button" className={styles.run} onClick={() => void run()} disabled={running}>
           {running ? t('page.running') : t('page.run')}
         </button>
 
-        {error !== null && <div className="dsh-toolbox-error">{error}</div>}
+        {error !== null && <div className={styles.error}>{error}</div>}
 
         {result !== null && (
-          <div className="dsh-toolbox-result">
-            <div className="dsh-toolbox-resultBar">
-              <span className="dsh-toolbox-resultLabel">{t('page.result')}</span>
-              <button type="button" className="dsh-toolbox-action" onClick={() => void copy()}>
+          <div className={styles.result}>
+            <div className={styles.resultBar}>
+              <span className={styles.resultLabel}>{t('page.result')}</span>
+              <button type="button" className={styles.action} onClick={() => void copy()}>
                 {copied ? t('page.copied') : t('page.copy')}
               </button>
-              <button type="button" className="dsh-toolbox-action" onClick={download}>{t('page.download')}</button>
-              <button type="button" className="dsh-toolbox-action" onClick={() => void saveToProject()}>
+              <button type="button" className={styles.action} onClick={download}>{t('page.download')}</button>
+              <button type="button" className={styles.action} onClick={() => void saveToProject()}>
                 {t('page.save')}
               </button>
             </div>
             <ResultView result={result} />
-            {saved !== null && <div className="dsh-toolbox-note">{t('page.saved')}: {saved}</div>}
-            {saveError !== null && <div className="dsh-toolbox-error">{t('page.saveFail')}: {saveError}</div>}
+            {saved !== null && <div className={styles.note}>{t('page.saved')}: {saved}</div>}
+            {saveError !== null && <div className={styles.error}>{t('page.saveFail')}: {saveError}</div>}
           </div>
         )}
       </div>
@@ -295,9 +296,9 @@ function ResultView({ result }: { result: ToolResult }): JSX.Element {
   if (result.kind === 'table') {
     return (
       <>
-        {result.note !== undefined && <div className="dsh-toolbox-note">{result.note}</div>}
-        <div className="dsh-toolbox-tableWrap">
-          <table className="dsh-toolbox-table">
+        {result.note !== undefined && <div className={styles.note}>{result.note}</div>}
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
             <thead>
               <tr>{result.columns.map(col => <th key={col}>{col}</th>)}</tr>
             </thead>
@@ -306,7 +307,7 @@ function ResultView({ result }: { result: ToolResult }): JSX.Element {
                 <tr key={i}>
                   {row.map((cell, j) => (
                     <td key={j}>
-                      {j === 0 && isHexColor(cell) && <span className="dsh-toolbox-swatch" style={{ background: String(cell) }} />}
+                      {j === 0 && isHexColor(cell) && <span className={styles.swatch} style={{ background: String(cell) }} />}
                       {String(cell)}
                     </td>
                   ))}
@@ -319,7 +320,7 @@ function ResultView({ result }: { result: ToolResult }): JSX.Element {
     )
   }
   const text = result.kind === 'json' ? JSON.stringify(result.json, null, 2) : result.text
-  return <pre className="dsh-toolbox-pre">{text}</pre>
+  return <pre className={styles.pre}>{text}</pre>
 }
 
 /** Swatch for the color tool's hex output row. */

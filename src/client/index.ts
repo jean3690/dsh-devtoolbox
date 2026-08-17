@@ -18,7 +18,6 @@ import { ToolboxController } from './controller.ts'
 import { mountSidebarEntry } from './sidebar-entry.ts'
 import { mountToolboxView } from './view-mount.tsx'
 import { TOOLBOX_REMOTE } from './remote.ts'
-import { installToolboxStyles } from './styles.ts'
 import { ZH, EN } from '../i18n.ts'
 import type { SaveRequest, SaveResult } from '../wire.ts'
 
@@ -46,7 +45,6 @@ export const inject = ['slots', 'locale', 'remote']
  */
 export async function apply(ctx: ClientContext): Promise<void> {
   ctx.effect(() => ctx.locale.register(NS, { zh: ZH, en: EN }), 'dsh-toolbox: dictionaries')
-  ctx.effect(() => installToolboxStyles(), 'dsh-toolbox: stylesheet')
 
   // $mount registers the 'remote.toolbox' namespace service and owns its
   // removal for this fiber's lifetime.

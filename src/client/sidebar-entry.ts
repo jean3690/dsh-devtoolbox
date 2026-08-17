@@ -17,6 +17,7 @@
 import type { ToolboxController } from './controller.ts'
 import { lookup, currentLang } from '../i18n.ts'
 import { ICON_SVG } from './icon.ts'
+import styles from './toolbox.module.css'
 
 /** Stable data attribute identifying the injected entry row. */
 export const ENTRY_SELECTOR = '[data-dsh-toolbox-entry]'
@@ -48,9 +49,9 @@ function createEntry(controller: ToolboxController): HTMLButtonElement {
   const entry = document.createElement('button')
   entry.type = 'button'
   entry.dataset.dshToolboxEntry = ''
-  entry.className = 'dsh-toolbox-entry'
+  entry.className = styles.entry!
   entry.setAttribute('aria-label', label)
-  entry.innerHTML = `<span class="dsh-toolbox-entryIcon">${ICON_SVG}</span><span>${label}</span>`
+  entry.innerHTML = `<span class="${styles.entryIcon}">${ICON_SVG}</span><span>${label}</span>`
   entry.addEventListener('click', () => { controller.toggle() })
   return entry
 }

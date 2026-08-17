@@ -1,19 +1,27 @@
 /**
- * dsh-toolbox styles: one injected <style> element, scoped by the plugin's
- * own data attributes so nothing leaks into the rest of the GUI. Colors ride
- * the dsh `--dsw-*` tokens so the toolbox follows the active theme
- * (light/dark and skins).
+ * dsh-toolbox styles as CSS Modules (web-styling.md alignment): component
+ * styles are local classes compiled to hashed names; the center-column
+ * takeover rules are plugin-owned global rules scoped by our own data
+ * attributes and wrapped in :global. Colors use only the ui-theme
+ * `--dsw-alias-*` semantic tokens — no static palette values, no color
+ * literals, no theme selectors (light/dark is the theme owner's job).
+ * Font sizes are paired with line heights; interactive controls expose
+ * :focus-visible outlines.
  *
- * @module dsh-toolbox/client/styles
+ * @module dsh-toolbox/client/toolbox.module.css
  */
 
-const CSS = `
-/* --- center-column takeover (attribute-scoped, sibling-panel aware) --------- */
-[data-pane='conversation'] {
+/* --- center-column takeover (global rules, attribute-scoped) ----------------- */
+:global([data-pane='conversation']) {
   position: relative;
 }
 
-[data-dsh-toolbox-view] {
+/* The toolbox container rides inside the conversation grid item as an extra
+   trailing child; hidden unless the toolbox is active. The `dsh-toolbox-root`
+   layout class lives on the React tree's own root div inside this container
+   — never on the host container — so the hide rule below cannot be defeated
+   by the layout class. */
+:global([data-dsh-toolbox-view]) {
   position: absolute;
   inset: 0;
   display: none;
@@ -22,9 +30,7 @@ const CSS = `
   overflow: hidden;
 }
 
-/* Single-occupant center column: the view shows only while this plugin is
-   active AND no sibling panel (task board / ssh) claims the column. */
-html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-toolbox-view] {
+:global(html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-toolbox-view]) {
   display: flex;
   flex-direction: column;
 }
@@ -32,13 +38,13 @@ html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh
 /* While the toolbox is active, hide the conversation subtree underneath
    (it stays mounted and stateful). !important beats the shell's inline
    display: contents wrapper. */
-html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-pane='conversation'] > :not([data-dsh-toolbox-view]),
-html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [class*='centerCol'] > :not([data-dsh-toolbox-view]) {
+:global(html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-pane='conversation'] > :not([data-dsh-toolbox-view])),
+:global(html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [class*='centerCol'] > :not([data-dsh-toolbox-view])) {
   display: none !important;
 }
 
 /* --- sidebar entry row ------------------------------------------------------- */
-.dsh-toolbox-entry {
+.entry {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -51,18 +57,23 @@ html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh
   color: var(--dsw-alias-label-secondary);
   cursor: pointer;
   font-size: 13px;
+  line-height: 1.4;
   white-space: nowrap;
 }
-.dsh-toolbox-entry:hover {
-  background: var(--dsw-specific-sidebar-nav-item-hover);
+.entry:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-primary);
 }
-.dsh-toolbox-entry[data-active] {
-  background: var(--dsw-specific-sidebar-nav-item-active);
+.entry[data-active] {
+  background: var(--dsw-alias-interactive-bg-active);
   color: var(--dsw-alias-label-primary);
   font-weight: 600;
 }
-.dsh-toolbox-entryIcon {
+.entry:focus-visible {
+  outline: 2px solid var(--dsw-alias-brand-primary);
+  outline-offset: -2px;
+}
+.entryIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -72,85 +83,99 @@ html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh
 }
 
 /* --- toolbox view internals --------------------------------------------------- */
-.dsh-toolbox-root {
+.root {
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
   font-size: 14px;
+  line-height: 1.5;
   color: var(--dsw-alias-label-primary);
 }
-.dsh-toolbox-header {
+.header {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 14px 20px;
-  border-bottom: 1px solid var(--dsw-alias-border-subtle);
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
   flex: none;
 }
-.dsh-toolbox-back {
+.back {
   background: transparent;
-  border: 1px solid var(--dsw-alias-border-subtle);
+  border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 8px;
   color: var(--dsw-alias-label-secondary);
   padding: 4px 10px;
   cursor: pointer;
   font-size: 13px;
+  line-height: 1.4;
 }
-.dsh-toolbox-back:hover {
+.back:hover {
   color: var(--dsw-alias-label-primary);
-  border-color: var(--dsw-alias-border-strong);
+  border-color: var(--dsw-alias-border-l3);
 }
-.dsh-toolbox-title {
+.back:focus-visible,
+.search:focus-visible,
+.cat:focus-visible,
+.card:focus-visible,
+.run:focus-visible,
+.action:focus-visible,
+.input:focus-visible {
+  outline: 2px solid var(--dsw-alias-brand-primary);
+  outline-offset: -2px;
+}
+.title {
   font-size: 15px;
+  line-height: 1.4;
   font-weight: 600;
   flex: none;
 }
-.dsh-toolbox-subtitle {
+.subtitle {
   font-size: 12px;
+  line-height: 1.4;
   color: var(--dsw-alias-label-tertiary);
   flex: none;
 }
-.dsh-toolbox-search {
+.search {
   flex: 1;
   min-width: 160px;
-  background: var(--dsw-alias-bg-raised);
-  border: 1px solid var(--dsw-alias-border-subtle);
+  background: var(--dsw-alias-bg-layer-1);
+  border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 8px;
   color: var(--dsw-alias-label-primary);
   padding: 6px 12px;
   font-size: 13px;
+  line-height: 1.4;
   outline: none;
 }
-.dsh-toolbox-search:focus {
-  border-color: var(--dsw-alias-accent);
-}
-.dsh-toolbox-cats {
+.cats {
   display: flex;
   gap: 6px;
   padding: 10px 20px 0;
   flex-wrap: wrap;
   flex: none;
 }
-.dsh-toolbox-cat {
+.cat {
   background: transparent;
-  border: 1px solid var(--dsw-alias-border-subtle);
+  border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 999px;
   color: var(--dsw-alias-label-secondary);
   padding: 3px 12px;
   cursor: pointer;
   font-size: 12.5px;
+  line-height: 1.4;
 }
-.dsh-toolbox-cat:hover {
+.cat:hover {
   color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
 }
-.dsh-toolbox-cat[data-active] {
-  background: var(--dsw-alias-accent);
-  border-color: var(--dsw-alias-accent);
-  color: var(--dsw-alias-label-on-accent, #fff);
+.cat[data-active] {
+  background: var(--dsw-alias-button-primary-fill);
+  border-color: var(--dsw-alias-button-primary-fill);
+  color: var(--dsw-alias-label-primary-foreground);
   font-weight: 600;
 }
-.dsh-toolbox-grid {
+.grid {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -160,39 +185,41 @@ html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh
   padding: 14px 20px 20px;
   align-content: start;
 }
-.dsh-toolbox-card {
+.card {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  background: var(--dsw-alias-bg-raised);
-  border: 1px solid var(--dsw-alias-border-subtle);
+  background: var(--dsw-alias-bg-layer-1);
+  border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 10px;
   padding: 12px 14px;
   cursor: pointer;
   text-align: left;
   color: var(--dsw-alias-label-primary);
+  font: inherit;
 }
-.dsh-toolbox-card:hover {
-  border-color: var(--dsw-alias-accent);
-  background: var(--dsw-specific-sidebar-nav-item-hover, var(--dsw-alias-bg-raised));
+.card:hover {
+  border-color: var(--dsw-alias-brand-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
 }
-.dsh-toolbox-cardName {
+.cardName {
   display: flex;
   align-items: center;
   gap: 8px;
   font-weight: 600;
   font-size: 13.5px;
+  line-height: 1.4;
 }
-.dsh-toolbox-cardDesc {
+.cardDesc {
   font-size: 12px;
-  color: var(--dsw-alias-label-secondary);
   line-height: 1.45;
+  color: var(--dsw-alias-label-secondary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.dsh-toolbox-empty {
+.empty {
   grid-column: 1 / -1;
   text-align: center;
   color: var(--dsw-alias-label-tertiary);
@@ -200,7 +227,7 @@ html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh
 }
 
 /* --- tool page ----------------------------------------------------------------- */
-.dsh-toolbox-page {
+.page {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -209,100 +236,100 @@ html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh
   flex-direction: column;
   gap: 14px;
 }
-.dsh-toolbox-pageTitle {
-  font-size: 16px;
-  font-weight: 600;
-}
-.dsh-toolbox-pageDesc {
+.pageDesc {
   font-size: 13px;
+  line-height: 1.5;
   color: var(--dsw-alias-label-secondary);
-  margin-top: -8px;
 }
-.dsh-toolbox-field {
+.field {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-.dsh-toolbox-fieldLabel {
+.fieldLabel {
   font-size: 12.5px;
+  line-height: 1.4;
   color: var(--dsw-alias-label-secondary);
   font-weight: 600;
 }
-.dsh-toolbox-input {
-  background: var(--dsw-alias-bg-raised);
-  border: 1px solid var(--dsw-alias-border-subtle);
+.input {
+  background: var(--dsw-alias-bg-layer-1);
+  border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 8px;
   color: var(--dsw-alias-label-primary);
   padding: 8px 12px;
   font-size: 13px;
+  line-height: 1.55;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   outline: none;
   resize: vertical;
 }
-.dsh-toolbox-input:focus {
-  border-color: var(--dsw-alias-accent);
-}
-.dsh-toolbox-inputSmall {
+.inputSmall {
   max-width: 240px;
 }
-.dsh-toolbox-check {
+.check {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 13px;
+  line-height: 1.4;
   color: var(--dsw-alias-label-secondary);
   cursor: pointer;
 }
-.dsh-toolbox-run {
+.run {
   align-self: flex-start;
-  background: var(--dsw-alias-accent);
+  background: var(--dsw-alias-button-primary-fill);
   border: none;
   border-radius: 8px;
-  color: var(--dsw-alias-label-on-accent, #fff);
+  color: var(--dsw-alias-label-primary-foreground);
   padding: 8px 22px;
   font-size: 13.5px;
+  line-height: 1.4;
   font-weight: 600;
   cursor: pointer;
 }
-.dsh-toolbox-run:hover {
-  filter: brightness(1.08);
+.run:hover {
+  background: var(--dsw-alias-button-primary-hover);
 }
-.dsh-toolbox-run:disabled {
+.run:disabled {
   opacity: 0.6;
   cursor: default;
 }
-.dsh-toolbox-result {
+.result {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.dsh-toolbox-resultBar {
+.resultBar {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.dsh-toolbox-resultLabel {
+.resultLabel {
   font-size: 12.5px;
+  line-height: 1.4;
   font-weight: 600;
   color: var(--dsw-alias-label-secondary);
   flex: 1;
 }
-.dsh-toolbox-action {
+.action {
   background: transparent;
-  border: 1px solid var(--dsw-alias-border-subtle);
+  border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 6px;
   color: var(--dsw-alias-label-secondary);
   padding: 3px 10px;
   font-size: 12px;
+  line-height: 1.4;
   cursor: pointer;
 }
-.dsh-toolbox-action:hover {
+.action:hover {
   color: var(--dsw-alias-label-primary);
-  border-color: var(--dsw-alias-border-strong);
+  border-color: var(--dsw-alias-border-l3);
+  background: var(--dsw-alias-interactive-bg-hover);
 }
-.dsh-toolbox-pre {
-  background: var(--dsw-alias-bg-raised);
-  border: 1px solid var(--dsw-alias-border-subtle);
+.pre {
+  background: var(--dsw-alias-bg-layer-1);
+  border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 8px;
   padding: 12px;
   font-size: 12.5px;
@@ -315,59 +342,48 @@ html[data-dsh-toolbox-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh
   margin: 0;
   color: var(--dsw-alias-label-primary);
 }
-.dsh-toolbox-tableWrap {
+.tableWrap {
   overflow: auto;
   max-height: 46vh;
-  border: 1px solid var(--dsw-alias-border-subtle);
+  border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 8px;
 }
-.dsh-toolbox-table {
+.table {
   border-collapse: collapse;
   font-size: 12.5px;
+  line-height: 1.5;
   width: 100%;
 }
-.dsh-toolbox-table th,
-.dsh-toolbox-table td {
-  border: 1px solid var(--dsw-alias-border-subtle);
+.table th,
+.table td {
+  border: 1px solid var(--dsw-alias-border-l2);
   padding: 5px 10px;
   text-align: left;
   white-space: nowrap;
 }
-.dsh-toolbox-table th {
-  background: var(--dsw-alias-bg-raised);
+.table th {
+  background: var(--dsw-alias-bg-layer-1);
   font-weight: 600;
   position: sticky;
   top: 0;
 }
-.dsh-toolbox-note {
+.note {
   font-size: 12px;
+  line-height: 1.4;
   color: var(--dsw-alias-label-tertiary);
 }
-.dsh-toolbox-error {
+.error {
   font-size: 13px;
-  color: var(--dsw-alias-danger, #e5484d);
+  line-height: 1.5;
+  color: var(--dsw-alias-state-error-primary);
   white-space: pre-wrap;
 }
-.dsh-toolbox-swatch {
+.swatch {
   display: inline-block;
   width: 14px;
   height: 14px;
   border-radius: 4px;
-  border: 1px solid var(--dsw-alias-border-strong);
+  border: 1px solid var(--dsw-alias-border-l3);
   vertical-align: middle;
   margin-right: 6px;
-}
-`
-
-let installed = false
-
-/** Inject the toolbox stylesheet once (idempotent); returns the disposer. */
-export function installToolboxStyles(): () => void {
-  if (installed) return () => {}
-  installed = true
-  const style = document.createElement('style')
-  style.dataset.dshToolboxStyles = ''
-  style.textContent = CSS
-  document.head.appendChild(style)
-  return () => { style.remove() }
 }
