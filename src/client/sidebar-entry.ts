@@ -48,7 +48,7 @@ function createEntry(controller: ToolboxController): HTMLButtonElement {
   const label = lookup(currentLang(), 'entry.label')
   const entry = document.createElement('button')
   entry.type = 'button'
-  entry.dataset.dshToolboxEntry = ''
+  entry.dataset.dshDevtoolboxEntry = ''
   entry.className = styles.entry!
   entry.setAttribute('aria-label', label)
   entry.innerHTML = `<span class="${styles.entryIcon}">${ICON_SVG}</span><span>${label}</span>`

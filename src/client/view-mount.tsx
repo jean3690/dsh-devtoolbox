@@ -53,7 +53,7 @@ export function mountToolboxView(
     const column = conversationColumn()
     if (column === undefined) return
     container = document.createElement('div')
-    container.dataset.dshToolboxView = ''
+    container.dataset.dshDevtoolboxView = ''
     // No className here: the `dsh-devtoolbox-root` layout class lives on the
     // React tree's own root div inside this container. Giving the host
     // container both a data attribute and the layout class would make
