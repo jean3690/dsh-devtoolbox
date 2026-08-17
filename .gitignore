@@ -1,0 +1,15 @@
+# dependencies
+node_modules/
+.npm-cache/
+
+# build/test artifacts that are not part of the package
+coverage/
+dist/
+
+# machine-local
+.agents/
+.playwright-cli/
+*.log
+
+# editor
+.DS_Store.playwright/

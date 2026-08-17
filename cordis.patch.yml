@@ -1,0 +1,29 @@
+# dsh-toolbox bundle patch: mounts the dual-face toolbox plugin row into the
+# web profile roster. The node half (exports ".") runs in the host process
+# (/toolbox command + agent tool registration + file tools); the `dsh.client`
+# declaration in package.json makes the browser half (exports "./client",
+# served at /plugins/<id>/client.js) load in the web GUI.
+#
+# Activate with: dsh plugin --profile web add link:/home/jean/program/dsh-toolbox
+- insert:
+    - id: dsh-toolbox
+      name: dsh-toolbox
+      config:
+        # Agent-visible tools (deterministic utilities the model can call in
+        # conversation). Empty = expose none; '*' = expose all built-ins.
+        # Built-in candidates: text_stats, cn_convert, case_convert, base64,
+        # url, json_format, json_csv, md5, sha, uuid, password, phone, email,
+        # url_extract, ip_extract, money, radix, timestamp, file_hash, file_encode.
+        agentTools: []
+        # User-defined tools: your own deterministic utilities, written as
+        # JS expressions (the patch layer already trusts !!js). Each entry is
+        # registered as toolbox_<name> when agentTools contains it (or '*').
+        # userTools: []
+        #   - name: shout
+        #     description: 把文本转成大写并加感叹号
+        #     args:
+        #       text: { type: 'string', required: true, description: '输入文本' }
+        #     run: !!js |
+        #       ((args) => ({ text: String(args.text).toUpperCase() + '!' }))
+        # Save-to-workspace RPC (browser "保存到项目" button).
+        saveEnabled: true
