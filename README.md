@@ -5,6 +5,7 @@
 参考 [devtoolbox.online](https://devtoolbox.online/zh-CN/tools) 设计，**数据不出本机**。
 
 [![dsh-plugin](https://img.shields.io/badge/ecosystem-dsh--plugin-8b5cf6)](https://github.com/topics/dsh-plugin)
+[![CI](https://github.com/jean3690/dsh-devtoolbox/actions/workflows/ci.yml/badge.svg)](https://github.com/jean3690/dsh-devtoolbox/actions/workflows/ci.yml)
 
 ## 你能得到什么
 

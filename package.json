@@ -49,6 +49,11 @@
     "devtools",
     "utils"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jean3690/dsh-devtoolbox.git"
+  },
+  "homepage": "https://github.com/jean3690/dsh-devtoolbox",
   "engines": {
     "node": "^22.19.0 || >=24.0.0"
   },
