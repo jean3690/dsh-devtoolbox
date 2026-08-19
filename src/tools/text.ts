@@ -279,6 +279,113 @@ export const text_ops: ToolFn = {
   },
 }
 
+/** Convert line endings between LF / CRLF / CR. */
+export const line_convert: ToolFn = {
+  id: 'line_convert',
+  nameKey: 'tool.line_convert',
+  descKey: 'tool.line_convert.desc',
+  category: 'text',
+  textPayload: true,
+  args: {
+    text: { type: 'string', required: true, description: 'input text' },
+    to: { type: 'string', default: 'lf', description: 'lf | crlf | cr' },
+  },
+  run({ text, to }) {
+    const target = String(to).toLowerCase()
+    const sep = target === 'crlf' ? '\r\n' : target === 'cr' ? '\r' : '\n'
+    const lines = String(text).split(/\r\n|\r|\n/)
+    return { kind: 'text', text: lines.join(sep) }
+  },
+}
+
+/** JS/JSON string escaping and unescaping. */
+export const escape: ToolFn = {
+  id: 'escape',
+  nameKey: 'tool.escape',
+  descKey: 'tool.escape.desc',
+  category: 'text',
+  textPayload: true,
+  args: {
+    text: { type: 'string', required: true, description: 'input text' },
+    target: { type: 'string', default: 'js', description: 'js | json' },
+    direction: { type: 'string', default: 'escape', description: 'escape | unescape' },
+  },
+  run({ text, target, direction }) {
+    const s = String(text)
+    const tgt = String(target).toLowerCase()
+    try {
+      if (direction === 'unescape') {
+        if (tgt === 'json') {
+          try {
+            return { kind: 'text', text: JSON.parse(s) as string }
+          } catch {
+            return { kind: 'text', text: JSON.parse(`"${s}"`) as string }
+          }
+        }
+        return { kind: 'text', text: s.replace(/\\u([0-9a-fA-F]{4})/g, (_, h: string) => String.fromCharCode(parseInt(h, 16))).replace(/\\(['"\\bfnrtv0])/g, (m, c: string) => ({ n: '\n', t: '\t', r: '\r', b: '\b', f: '\f', v: '\v', '0': '\0', '"': '"', "'": "'", '\\': '\\' })[c] ?? m) }
+      }
+      if (tgt === 'json') return { kind: 'text', text: JSON.stringify(s) }
+      return { kind: 'text', text: s.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t').replace(/\x08/g, '\\b').replace(/\f/g, '\\f') }
+    } catch {
+      return { kind: 'text', text: 'Error: cannot parse input' }
+    }
+  },
+}
+
+/** Sort / dedupe / reverse / count lines. */
+export const sort_lines: ToolFn = {
+  id: 'sort_lines',
+  nameKey: 'tool.sort_lines',
+  descKey: 'tool.sort_lines.desc',
+  category: 'text',
+  textPayload: true,
+  args: {
+    text: { type: 'string', required: true, description: 'input text (one item per line)' },
+    action: { type: 'string', default: 'sort', description: 'sort | uniq | reverse | freq' },
+    order: { type: 'string', default: 'asc', description: 'asc | desc' },
+    numeric: { type: 'boolean', default: false, description: 'numeric comparison' },
+    ignoreCase: { type: 'boolean', default: false, description: 'case-insensitive comparison' },
+    limit: { type: 'number', default: 10, description: 'max rows for freq (1-1000)' },
+  },
+  run({ text, action, order, numeric, ignoreCase, limit }) {
+    const lines = String(text).split(/\r\n|\r|\n/).map(l => l.replace(/\r$/, ''))
+    const desc = order === 'desc'
+    const cmp = numeric === true
+      ? (a: string, b: string): number => {
+          const x = Number(a); const y = Number(b)
+          return Number.isFinite(x) && Number.isFinite(y) ? x - y : a.localeCompare(b)
+        }
+      : (a: string, b: string): number => ignoreCase === true ? a.toLowerCase().localeCompare(b.toLowerCase()) : a.localeCompare(b)
+    switch (action) {
+      case 'uniq': {
+        const seen = new Set<string>()
+        const out: string[] = []
+        for (const l of lines) {
+          const k = ignoreCase === true ? l.toLowerCase() : l
+          if (!seen.has(k)) { seen.add(k); out.push(l) }
+        }
+        return { kind: 'text', text: out.join('\n') }
+      }
+      case 'reverse':
+        return { kind: 'text', text: [...lines].reverse().join('\n') }
+      case 'freq': {
+        const counts = new Map<string, number>()
+        for (const l of lines) {
+          const k = ignoreCase === true ? l.toLowerCase() : l
+          counts.set(k, (counts.get(k) ?? 0) + 1)
+        }
+        const rows = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, Math.max(1, Math.min(1000, Math.floor(Number(limit)) || 10)))
+        return { kind: 'table', columns: ['value', 'count'], rows }
+      }
+      case 'sort':
+      default: {
+        const sorted = [...lines].sort((a, b) => (desc ? -1 : 1) * cmp(a, b))
+        return { kind: 'text', text: sorted.join('\n') }
+      }
+    }
+  },
+}
+
 export const textTools: readonly ToolFn[] = Object.freeze([
   text_stats,
   text_remove_blank,
@@ -289,4 +396,7 @@ export const textTools: readonly ToolFn[] = Object.freeze([
   cn_convert,
   regex,
   text_ops,
+  line_convert,
+  escape,
+  sort_lines,
 ])

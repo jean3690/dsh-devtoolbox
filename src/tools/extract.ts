@@ -73,10 +73,20 @@ export const phone = extractTool(
   /(?<!\d)(?:(?:\+?86[- ]?)?1[3-9]\d{9})(?!\d)/g,
   v => {
     const digits = v.replace(/\D/g, '').slice(-11)
+    // Disjoint 3-digit prefix segments; order doesn't matter.
     const prefixes: Array<[RegExp, string]> = [
-      [/^13[4-9]/, '中国移动'], [/^15[0-2]/, '中国移动'], [/^15[7-9]/, '中国移动'], [/^18[2-8]/, '中国移动'], [/^14[78]/, '中国移动'], [/^19[5-9]/, '中国移动'], [/^17[2-8]/, '中国移动'],
-      [/^13[0-2]/, '中国联通'], [/^15[56]/, '中国联通'], [/^18[56]/, '中国联通'], [/^14[56]/, '中国联通'], [/^17[0-1]/, '中国联通'], [/^16[67]/, '中国联通'],
-      [/^133/, '中国电信'], [/^153/, '中国电信'], [/^18[019]/, '中国电信'], [/^149/, '中国电信'], [/^17[3-4]/, '中国电信'], [/^199/, '中国电信'], [/^16[2-3]/, '中国电信'], [/^191/, '中国电信'],
+      // 中国移动
+      [/^13[4-9]/, '中国移动'], [/^147/, '中国移动'], [/^15[0-2]/, '中国移动'], [/^15[7-9]/, '中国移动'],
+      [/^165/, '中国移动'], [/^172/, '中国移动'], [/^17[89]/, '中国移动'], [/^18[2-4]/, '中国移动'],
+      [/^18[78]/, '中国移动'], [/^19[578]/, '中国移动'],
+      // 中国联通
+      [/^13[0-2]/, '中国联通'], [/^145/, '中国联通'], [/^146/, '中国联通'], [/^155/, '中国联通'], [/^156/, '中国联通'],
+      [/^16[67]/, '中国联通'], [/^170/, '中国联通'], [/^171/, '中国联通'], [/^17[56]/, '中国联通'], [/^18[56]/, '中国联通'],
+      [/^196/, '中国联通'],
+      // 中国电信
+      [/^133/, '中国电信'], [/^149/, '中国电信'], [/^153/, '中国电信'], [/^16[0-3]/, '中国电信'],
+      [/^17[34]/, '中国电信'], [/^177/, '中国电信'], [/^18[01]/, '中国电信'], [/^189/, '中国电信'],
+      [/^19[013]/, '中国电信'], [/^199/, '中国电信'],
     ]
     for (const [re, name] of prefixes) if (re.test(digits)) return name
     return 'unknown carrier'
@@ -131,9 +141,67 @@ export const ip_extract: ToolFn = {
   },
 }
 
+/** Chinese resident ID number: validate checksum, extract birthdate/sex. */
+const ID_WEIGHTS = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2]
+const ID_CHECK = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2']
+
+export function parseIdCard(id: string): { ok: true; id18: string; born: string; sex: string; region: string; valid: boolean; from15: boolean } | { ok: false; error: string } {
+  let s = id.trim().toUpperCase()
+  let from15 = false
+  if (/^\d{15}$/.test(s)) {
+    // 15 → 18: insert "19" at the year position and recompute the checksum.
+    s = s.slice(0, 6) + '19' + s.slice(6)
+    from15 = true
+  }
+  if (!(from15 ? /^\d{17}$/.test(s) : /^\d{17}[\dX]$/.test(s))) return { ok: false, error: 'not a valid 15/18-digit ID number' }
+  let sum = 0
+  for (let i = 0; i < 17; i++) sum += ID_WEIGHTS[i]! * Number(s[i])
+  const check = ID_CHECK[sum % 11]!
+  if (from15) s += check
+  return {
+    ok: true,
+    id18: s,
+    valid: from15 ? true : check === s[17],
+    born: `${s.slice(6, 10)}-${s.slice(10, 12)}-${s.slice(12, 14)}`,
+    sex: Number(s[16]) % 2 === 1 ? 'male' : 'female',
+    region: s.slice(0, 6),
+    from15,
+  }
+}
+
+export const id_card: ToolFn = {
+  id: 'id_card',
+  nameKey: 'tool.id_card',
+  descKey: 'tool.id_card.desc',
+  category: 'extract',
+  textPayload: true,
+  args: {
+    text: { type: 'string', required: true, description: '15 or 18 digit ID number (one per line)' },
+  },
+  run({ text }) {
+    const lines = String(text).split(/\r\n|\r|\n/).map(l => l.trim()).filter(l => l !== '')
+    if (lines.length === 0) return { kind: 'text', text: 'Error: empty input' }
+    const rows: Array<readonly (string | number)[]> = []
+    const notes: string[] = []
+    for (const line of lines) {
+      const res = parseIdCard(line)
+      if (!res.ok) { notes.push(`"${line}": ${res.error}`); continue }
+      rows.push([res.id18, res.valid ? '✓' : '✗', res.born, res.sex, res.region, res.from15 ? 'from 15-digit' : '18-digit'])
+      if (!res.valid) notes.push(`"${line}": checksum mismatch`)
+    }
+    return {
+      kind: 'table',
+      columns: ['id', 'valid', 'birthdate', 'sex', 'region code', 'length'],
+      rows,
+      note: notes.length > 0 ? notes.join('; ') : undefined,
+    }
+  },
+}
+
 export const extractTools: readonly ToolFn[] = Object.freeze([
   phone,
   email,
   url_extract,
   ip_extract,
+  id_card,
 ])

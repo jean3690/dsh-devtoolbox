@@ -262,9 +262,21 @@ declare const cn_convert: ToolFn;
 declare const regex: ToolFn;
 /** Line operations: reverse order, sort, reverse characters. */
 declare const text_ops: ToolFn;
+/** Convert line endings between LF / CRLF / CR. */
+declare const line_convert: ToolFn;
+/** JS/JSON string escaping and unescaping. */
+declare const escape: ToolFn;
+/** Sort / dedupe / reverse / count lines. */
+declare const sort_lines: ToolFn;
 declare const textTools: readonly ToolFn[];
 //#endregion
 //#region src/tools/encode.d.ts
+declare function utf8ToBase64(s: string): string;
+declare function base64ToUtf8(b64: string): string;
+/** URL-safe base64 encode (JWT alphabet, no padding). */
+declare function base64UrlEncode(s: string): string;
+/** URL-safe base64 decode → string (or null on malformed input). */
+declare function base64UrlDecode(s: string): string | null;
 /** Base64 encode/decode (UTF-8 safe, both directions). */
 declare const base64: ToolFn;
 /** URL encode/decode + query-string parse/format. */
@@ -277,6 +289,9 @@ declare const unicode_escape: ToolFn;
 declare const radix: ToolFn;
 /** Timestamp ⇄ date/time conversion. */
 declare const timestamp: ToolFn;
+declare const data_url: ToolFn;
+/** QR code generation (PNG data URL). */
+declare const qrcode: ToolFn;
 declare const encodeTools: readonly ToolFn[];
 //#endregion
 //#region src/tools/data.d.ts
@@ -288,6 +303,17 @@ declare const json_csv: ToolFn;
 declare const csv_fix: ToolFn;
 /** Line-level diff via LCS; unified-ish output with + / - / space prefixes. */
 declare const text_diff: ToolFn;
+/** Query a JSON document with a minimal JSONPath subset: `$.a.b[0].*`. */
+declare function jsonPathGet(root: unknown, path: string): {
+  ok: true;
+  value: unknown;
+} | {
+  ok: false;
+  error: string;
+};
+declare const json_path: ToolFn;
+/** JSON ↔ YAML conversion. */
+declare const json_to_yaml: ToolFn;
 declare const dataTools: readonly ToolFn[];
 //#endregion
 //#region src/tools/security.d.ts
@@ -303,6 +329,9 @@ declare const uuid: ToolFn;
 declare const password: ToolFn;
 /** Random number(s) generator. */
 declare const random_num: ToolFn;
+declare function crc32Hex(text: string): string;
+declare const crc32: ToolFn;
+declare const crypto_encrypt: ToolFn;
 declare const securityTools: readonly ToolFn[];
 //#endregion
 //#region src/tools/extract.d.ts
@@ -314,6 +343,19 @@ declare const email: ToolFn<Record<string, unknown>>;
 declare const url_extract: ToolFn<Record<string, unknown>>;
 /** IPv4 (and optionally IPv6) addresses. */
 declare const ip_extract: ToolFn;
+declare function parseIdCard(id: string): {
+  ok: true;
+  id18: string;
+  born: string;
+  sex: string;
+  region: string;
+  valid: boolean;
+  from15: boolean;
+} | {
+  ok: false;
+  error: string;
+};
+declare const id_card: ToolFn;
 declare const extractTools: readonly ToolFn[];
 //#endregion
 //#region src/tools/convert.d.ts
@@ -321,6 +363,8 @@ declare const extractTools: readonly ToolFn[];
 declare const money: ToolFn;
 /** HEX ⇄ RGB ⇄ HSL conversion with a color swatch preview value. */
 declare const color: ToolFn;
+declare const unit_convert: ToolFn;
+declare const time_convert: ToolFn;
 declare const convertTools: readonly ToolFn[];
 //#endregion
 //#region src/tools/reference.d.ts
@@ -330,6 +374,21 @@ declare const mime: ToolFn;
 declare const ascii: ToolFn;
 declare const picker: ToolFn;
 declare const referenceTools: readonly ToolFn[];
+//#endregion
+//#region src/tools/api.d.ts
+/** Parse the `headers` arg: JSON object, `Key: value` lines, or `key=value` lines. */
+declare function parseHeaders(raw: string | undefined): Record<string, string>;
+declare const http_request: ToolFn;
+declare const apiTools: readonly ToolFn[];
+//#endregion
+//#region src/tools/network.d.ts
+/** Tokenize a shell command line, honouring single/double quotes and backslash escapes. */
+declare function tokenizeCommand(line: string): string[];
+declare const curl_parse: ToolFn;
+declare const url_parse: ToolFn;
+declare const jwt: ToolFn;
+declare const hmac: ToolFn;
+declare const networkTools: readonly ToolFn[];
 //#endregion
 //#region src/tools/index.d.ts
 /**
@@ -379,7 +438,7 @@ type ToolResult = {
   note?: string;
 };
 /** Category ids. */
-type CategoryId = 'text' | 'encode' | 'data' | 'security' | 'extract' | 'convert' | 'reference' | 'life';
+type CategoryId = 'text' | 'encode' | 'data' | 'security' | 'extract' | 'convert' | 'reference' | 'life' | 'network';
 declare const CATEGORIES: readonly {
   id: CategoryId;
   nameKey: string;
@@ -440,4 +499,4 @@ declare const inject: string[];
  */
 declare function apply(ctx: Context, config: Config): Promise<void>;
 //#endregion
-export { AGENT_EXPOSABLE_IDS, CATEGORIES, CategoryId, Config, EN_MESSAGES, HOST_ONLY_IDS, type SAVE_REQUEST_SCHEMA, type SAVE_RESULT_SCHEMA, type SaveRequest, type SaveResult, type TOOLBOX_INVOCATIONS, type TOOLBOX_SAVE_DESCRIPTOR, TOOLS, TOOL_BY_ID, ToolArgSpec, ToolFn, ToolResult, ToolboxService, ZH_MESSAGES, agentDescription, apply, ascii, base64, buildAgentTools, case_change, case_convert, cn_convert, coerceArgs, color, convertTools, csv_fix, dataTools, email, encodeTools, exposableIds, extractTools, fileEncodeTool, fileHashTool, fullwidth, html_entity, http_codes, inject, ip_extract, json_csv, json_format, md5, md5Hex, mime, money, name, parseToolboxArgs, password, phone, picker, ports, radix, random_num, referenceTools, regex, renderResultText, resolveConfig, sanitizeFileName, sanitizeSubdir, securityTools, sha, textTools, text_dedup, text_diff, text_ops, text_remove_blank, text_stats, timestamp, toolboxCommand, unicode_escape, url, url_extract, uuid };
+export { AGENT_EXPOSABLE_IDS, CATEGORIES, CategoryId, Config, EN_MESSAGES, HOST_ONLY_IDS, type SAVE_REQUEST_SCHEMA, type SAVE_RESULT_SCHEMA, type SaveRequest, type SaveResult, type TOOLBOX_INVOCATIONS, type TOOLBOX_SAVE_DESCRIPTOR, TOOLS, TOOL_BY_ID, ToolArgSpec, ToolFn, ToolResult, ToolboxService, ZH_MESSAGES, agentDescription, apiTools, apply, ascii, base64, base64ToUtf8, base64UrlDecode, base64UrlEncode, buildAgentTools, case_change, case_convert, cn_convert, coerceArgs, color, convertTools, crc32, crc32Hex, crypto_encrypt, csv_fix, curl_parse, dataTools, data_url, email, encodeTools, escape, exposableIds, extractTools, fileEncodeTool, fileHashTool, fullwidth, hmac, html_entity, http_codes, http_request, id_card, inject, ip_extract, jsonPathGet, json_csv, json_format, json_path, json_to_yaml, jwt, line_convert, md5, md5Hex, mime, money, name, networkTools, parseHeaders, parseIdCard, parseToolboxArgs, password, phone, picker, ports, qrcode, radix, random_num, referenceTools, regex, renderResultText, resolveConfig, sanitizeFileName, sanitizeSubdir, securityTools, sha, sort_lines, textTools, text_dedup, text_diff, text_ops, text_remove_blank, text_stats, time_convert, timestamp, tokenizeCommand, toolboxCommand, unicode_escape, unit_convert, url, url_extract, url_parse, utf8ToBase64, uuid };

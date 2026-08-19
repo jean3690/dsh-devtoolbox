@@ -5,6 +5,7 @@
  */
 
 import type { ToolFn } from './index.ts'
+import { parse as yamlParse, stringify as yamlStringify } from 'yaml'
 
 function parseJson(text: string): unknown {
   return JSON.parse(text)
@@ -185,26 +186,134 @@ export const text_diff: ToolFn = {
     }
     while (i < n) { ops.push({ op: '-', line: a[i]! }); i++ }
     while (j < m) { ops.push({ op: '+', line: b[j]! }); j++ }
-    // Context folding.
+    // Output phase: change blocks get a hunk header; an unchanged run that
+    // sits between two change blocks collapses to `context` lines + '…' +
+    // `context` lines when longer than 2·context + 1.
     const ctx = Math.max(0, Number(context) || 0)
     const out: string[] = []
-    let skip = 0
-    for (let k = 0; k < ops.length; k++) {
-      const op = ops[k]!
-      if (op.op === ' ') {
-        if (skip > 0) { out.push(`@@ -${k - skip},${skip} +${k - skip},${skip} @@`); skip = 0 }
-        out.push(` ${op.line}`)
-      } else {
-        if (skip > ctx && k + ctx < ops.length && ops[k + ctx]!.op === ' ') {
-          // too far from a change and from the next one: fold
-          const nextChange = ops.slice(k).findIndex(o => o.op !== ' ')
-          if (nextChange === -1 || nextChange > 2 * ctx) { out.push('…'); k = k + ctx; continue }
+    let totalDel = 0
+    let totalAdd = 0
+    let k = 0
+    while (k < ops.length) {
+      if (ops[k]!.op === ' ') {
+        let runEnd = k
+        while (runEnd < ops.length && ops[runEnd]!.op === ' ') runEnd++
+        const runLen = runEnd - k
+        const between = k > 0 && runEnd < ops.length
+        if (between && runLen > 2 * ctx + 1) {
+          for (let t = 0; t < ctx; t++) out.push(` ${ops[k + t]!.line}`)
+          out.push('…')
+          for (let t = runEnd - ctx; t < runEnd; t++) out.push(` ${ops[t]!.line}`)
+        } else {
+          for (let t = k; t < runEnd; t++) out.push(` ${ops[t]!.line}`)
         }
-        skip++
-        out.push(`${op.op}${op.line}`)
+        k = runEnd
+        continue
       }
+      let runEnd = k
+      let del = 0
+      let add = 0
+      while (runEnd < ops.length && ops[runEnd]!.op !== ' ') {
+        if (ops[runEnd]!.op === '-') del++
+        else add++
+        runEnd++
+      }
+      out.push(`@@ -${totalDel},${del} +${totalAdd},${add} @@`)
+      for (let t = k; t < runEnd; t++) out.push(`${ops[t]!.op}${ops[t]!.line}`)
+      totalDel += del
+      totalAdd += add
+      k = runEnd
     }
     return { kind: 'text', text: out.join('\n') }
+  },
+}
+
+/** Query a JSON document with a minimal JSONPath subset: `$.a.b[0].*`. */
+export function jsonPathGet(root: unknown, path: string): { ok: true; value: unknown } | { ok: false; error: string } {
+  const p = path.trim()
+  if (p === '') return { ok: false, error: 'empty path' }
+  if (p === '$') return { ok: true, value: root }
+  if (!p.startsWith('$')) return { ok: false, error: 'path must start with $' }
+  const body = p.slice(1)
+  const parts: Array<{ type: 'key'; key: string } | { type: 'index'; index: number } | { type: 'wild' }> = []
+  const re = /\.([A-Za-z0-9_\u4e00-\u9fff-]+)|\.\*|\[(\d+)\]|\[(['"]?)([^\]'"]*)\2\]|\[\*\]/g
+  let last = 0
+  let m: RegExpExecArray | null
+  while ((m = re.exec(body)) !== null) {
+    if (m.index !== last) return { ok: false, error: `unexpected token near "${body.slice(last, m.index)}"` }
+    last = re.lastIndex
+    if (m[1] !== undefined) parts.push({ type: 'key', key: m[1] })
+    else if (m[2] !== undefined) parts.push({ type: 'index', index: Number(m[2]) })
+    else if (m[4] !== undefined) parts.push({ type: 'key', key: m[4] })
+    else parts.push({ type: 'wild' })
+  }
+  if (last !== body.length) return { ok: false, error: `unexpected token near "${body.slice(last)}"` }
+  let cur: unknown = root
+  for (const part of parts) {
+    if (part.type === 'wild') {
+      if (Array.isArray(cur)) cur = cur.flatMap(v => v)
+      else if (cur !== null && typeof cur === 'object') cur = Object.values(cur as Record<string, unknown>)
+      else return { ok: false, error: 'cannot wildcard a scalar' }
+    } else if (part.type === 'index') {
+      if (!Array.isArray(cur)) return { ok: false, error: 'indexing a non-array' }
+      const i = part.index < 0 ? cur.length + part.index : part.index
+      if (i < 0 || i >= cur.length) return { ok: false, error: `index ${part.index} out of range` }
+      cur = cur[i]
+    } else {
+      if (cur === null || typeof cur !== 'object' || Array.isArray(cur)) return { ok: false, error: `cannot read key "${part.key}"` }
+      if (!(part.key in (cur as Record<string, unknown>))) return { ok: false, error: `key "${part.key}" not found` }
+      cur = (cur as Record<string, unknown>)[part.key]
+    }
+  }
+  return { ok: true, value: cur }
+}
+
+export const json_path: ToolFn = {
+  id: 'json_path',
+  nameKey: 'tool.json_path',
+  descKey: 'tool.json_path.desc',
+  category: 'data',
+  textPayload: true,
+  args: {
+    text: { type: 'string', required: true, description: 'JSON document' },
+    path: { type: 'string', required: true, description: 'JSONPath, e.g. $.items[0].name or $.*' },
+  },
+  run({ text, path }) {
+    let doc: unknown
+    try {
+      doc = JSON.parse(String(text))
+    } catch (error) {
+      return { kind: 'text', text: `Error: invalid JSON: ${error instanceof Error ? error.message : String(error)}` }
+    }
+    const res = jsonPathGet(doc, String(path))
+    if (!res.ok) return { kind: 'text', text: `Error: ${res.error}` }
+    return { kind: 'json', json: res.value }
+  },
+}
+
+/** JSON ↔ YAML conversion. */
+export const json_to_yaml: ToolFn = {
+  id: 'json_to_yaml',
+  nameKey: 'tool.json_to_yaml',
+  descKey: 'tool.json_to_yaml.desc',
+  category: 'data',
+  textPayload: true,
+  args: {
+    text: { type: 'string', required: true, description: 'input JSON or YAML' },
+    direction: { type: 'string', default: 'jsonToYaml', description: 'jsonToYaml | yamlToJson' },
+  },
+  run({ text, direction }) {
+    const s = String(text)
+    try {
+      if (direction === 'yamlToJson') {
+        const doc = yamlParse(s)
+        return { kind: 'json', json: doc }
+      }
+      const doc = JSON.parse(s)
+      return { kind: 'text', text: yamlStringify(doc) }
+    } catch (error) {
+      return { kind: 'text', text: `Error: ${error instanceof Error ? error.message : String(error)}` }
+    }
   },
 }
 
@@ -213,4 +322,6 @@ export const dataTools: readonly ToolFn[] = Object.freeze([
   json_csv,
   csv_fix,
   text_diff,
+  json_path,
+  json_to_yaml,
 ])

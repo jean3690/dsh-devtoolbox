@@ -1,8 +1,8 @@
 # dsh-devtoolbox
 
 **DSH 本地工具箱插件**：侧边栏独立页面 + `/toolbox` 命令 + 配置驱动的 agent 确定性工具。
-约 35 个纯本地小工具（文本 / 编码 / 数据 / 安全 / 提取 / 转换 / 参考 / 效率），
-参考 [devtoolbox.online](https://devtoolbox.online/zh-CN/tools) 设计，**数据不出本机**。
+约 52 个本地小工具（文本 / 编码 / 数据 / 安全 / 提取 / 转换 / 参考 / 效率 / 网络），
+参考 [devtoolbox.online](https://devtoolbox.online/zh-CN/tools) 设计，**数据不出本机**（唯一例外：`http_request` 按需联网）。
 
 [![dsh-plugin](https://img.shields.io/badge/ecosystem-dsh--plugin-8b5cf6)](https://github.com/topics/dsh-plugin)
 [![CI](https://github.com/jean3690/dsh-devtoolbox/actions/workflows/ci.yml/badge.svg)](https://github.com/jean3690/dsh-devtoolbox/actions/workflows/ci.yml)
@@ -17,18 +17,19 @@
 | **agent 工具** | **配置驱动**：`agentTools` 决定哪些 `toolbox_*` 工具对模型可见（默认一个都不暴露）；`userTools` 让你用 JS 表达式自定义自己的工具 |
 | **文件工具** | `toolbox_file_hash` / `toolbox_file_encode`（GBK⇄UTF-8）——需要时在配置中启用 |
 
-## 工具清单（35 个，全部本地运行）
+## 工具清单（52 个，除 http_request 外全部本地运行）
 
 | 分类 | 工具 id |
 |---|---|
-| 文本 | `text_stats` `text_remove_blank` `text_dedup` `case_change` `case_convert` `fullwidth` `cn_convert` `regex` `text_ops` |
-| 编码 | `base64` `url` `html_entity` `unicode_escape` `radix` `timestamp` |
-| 数据 | `json_format` `json_csv` `csv_fix` `text_diff` |
-| 安全 | `md5` `sha` `uuid` `password` `random_num` |
-| 提取 | `phone` `email` `url_extract` `ip_extract` |
-| 转换 | `money` `color` |
+| 文本 | `text_stats` `text_remove_blank` `text_dedup` `case_change` `case_convert` `fullwidth` `cn_convert` `regex` `text_ops` `line_convert` `escape` `sort_lines` |
+| 编码 | `base64` `url` `html_entity` `unicode_escape` `radix` `timestamp` `data_url` `qrcode` |
+| 数据 | `json_format` `json_csv` `csv_fix` `text_diff` `json_path` `json_to_yaml` |
+| 安全 | `md5` `sha` `uuid` `password` `random_num` `crc32` `crypto_encrypt` |
+| 提取 | `phone` `email` `url_extract` `ip_extract` `id_card` |
+| 转换 | `money` `color` `unit_convert` `time_convert` |
 | 参考 | `http_codes` `ports` `mime` `ascii` |
 | 效率 | `picker` |
+| 网络 | `http_request`（GET/POST/PUT/PATCH/DELETE/HEAD/OPTIONS，自定义头/体/超时/截断；浏览器端受 CORS 限制，命令与 agent 端完整可用）`curl_parse`（curl 命令 → http_request 参数）`url_parse`（URL 分解）`jwt`（解码 + HS* 签名校验）`hmac`（HMAC 签名） |
 
 宿主文件工具：`file_hash` `file_encode`（agent 可暴露，见配置）。
 
@@ -70,9 +71,11 @@ dsh plugin --profile web add link:/path/to/dsh-devtoolbox
 
 **可暴露的内置工具**（`/toolbox agent` 可查看）：`text_stats cn_convert case_convert
 fullwidth base64 url html_entity unicode_escape radix timestamp json_format json_csv
-csv_fix text_diff md5 sha uuid password random_num phone email url_extract ip_extract
-money color http_codes ports mime ascii text_ops text_remove_blank text_dedup
-case_change regex` + 宿主文件工具 `file_hash file_encode`。
+csv_fix text_diff json_path json_to_yaml md5 sha uuid password random_num crc32
+crypto_encrypt phone email url_extract ip_extract id_card money color unit_convert
+time_convert http_codes ports mime ascii text_ops text_remove_blank text_dedup
+case_change regex line_convert escape sort_lines data_url qrcode http_request
+curl_parse url_parse jwt hmac` + 宿主文件工具 `file_hash file_encode`。
 
 ## 架构
 
@@ -88,7 +91,7 @@ src/
 ├── typert.host.ts      # Typert host manifest
 ├── present.ts          # 结果渲染（无依赖，三端复用）
 ├── i18n.ts             # zh/en 字典（UI + 命令 + agent 描述共用）
-├── tools/              # ★ 35 个纯函数工具（零 DOM/fs/网络，三端复用）
+├── tools/              # ★ 52 个工具（51 个本地纯函数 + http_request 按需联网，三端复用）
 └── client/             # 浏览器半：侧边栏入口 + 中心列视图
 ```
 
@@ -109,7 +112,7 @@ CSS Modules + 哈希类名（`toolbox.module.css`，lightningcss 编译，运行
 
 ```sh
 npm install          # 安装依赖
-npm test             # vitest：37 个测试（工具测试含 MD5/SHA 测试向量 + 宿主文件工具/路径消毒）
+npm test             # vitest：180 个测试（全部 52 个工具 + 边界/错误路径 + 配置/命令/agent 工具/保存服务 + i18n 一致性 + 本地 HTTP 服务集成测试）
 npm run build        # tsc + tsdown → lib/（node 半 ESM + client 半 ModuleLoader 单文件）
 bash scripts/smoke-e2e.mjs.sh   # Playwright 端到端回归（需 GUI 运行中 + playwright-cli）
 ```
@@ -138,7 +141,7 @@ npm publish    # prepublishOnly 自动先跑 build
 ## 兼容性
 
 - 运行时：DeepSeek Harness `0.1.0-rc.6`（peerDependencies 固定包线）
-- 依赖：`zod`（内联进宿主）、`opencc-js`（繁简词典，内联进客户端 bundle）
+- 依赖：`zod`（内联进宿主）、`opencc-js`（繁简词典，内联进客户端 bundle）、`yaml`（JSON↔YAML）、`qrcode`（QR 码生成）
 
 ## License
 

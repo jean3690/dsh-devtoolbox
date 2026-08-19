@@ -15,6 +15,8 @@ import { securityTools } from './security.ts'
 import { extractTools } from './extract.ts'
 import { convertTools } from './convert.ts'
 import { referenceTools } from './reference.ts'
+import { apiTools } from './api.ts'
+import { networkTools } from './network.ts'
 
 /** Tool argument declaration (JSON-schema-ish, kept minimal). */
 export interface ToolArgSpec {
@@ -50,7 +52,7 @@ export type ToolResult =
 
 /** Category ids. */
 export type CategoryId =
-  | 'text' | 'encode' | 'data' | 'security' | 'extract' | 'convert' | 'reference' | 'life'
+  | 'text' | 'encode' | 'data' | 'security' | 'extract' | 'convert' | 'reference' | 'life' | 'network'
 
 export const CATEGORIES: readonly { id: CategoryId; nameKey: string; icon: string }[] = [
   { id: 'text', nameKey: 'category.text', icon: '✍️' },
@@ -61,6 +63,7 @@ export const CATEGORIES: readonly { id: CategoryId; nameKey: string; icon: strin
   { id: 'convert', nameKey: 'category.convert', icon: '🔄' },
   { id: 'reference', nameKey: 'category.reference', icon: '📖' },
   { id: 'life', nameKey: 'category.life', icon: '⏱️' },
+  { id: 'network', nameKey: 'category.network', icon: '🌐' },
 ]
 
 /** All built-in tools, grouped. */
@@ -72,6 +75,8 @@ export const TOOLS: readonly ToolFn[] = Object.freeze([
   ...extractTools,
   ...convertTools,
   ...referenceTools,
+  ...apiTools,
+  ...networkTools,
 ])
 
 /** Index for /toolbox run and agent registration. */
@@ -132,3 +137,5 @@ export * from './security.ts'
 export * from './extract.ts'
 export * from './convert.ts'
 export * from './reference.ts'
+export * from './api.ts'
+export * from './network.ts'

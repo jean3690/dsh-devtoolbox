@@ -6,9 +6,10 @@
  * @module dsh-devtoolbox/tools/encode
  */
 
-import type { ToolFn } from './index.ts'
+import type { ToolFn, ToolResult } from './index.ts'
+import QRCode, { type QRCodeToDataURLOptions } from 'qrcode'
 
-function utf8ToBase64(s: string): string {
+export function utf8ToBase64(s: string): string {
   const bytes = new TextEncoder().encode(s)
   let bin = ''
   for (let i = 0; i < bytes.length; i += 0x8000) {
@@ -17,10 +18,25 @@ function utf8ToBase64(s: string): string {
   return btoa(bin)
 }
 
-function base64ToUtf8(b64: string): string {
+export function base64ToUtf8(b64: string): string {
   const bin = atob(b64.trim())
   const bytes = Uint8Array.from(bin, ch => ch.charCodeAt(0))
   return new TextDecoder().decode(bytes)
+}
+
+/** URL-safe base64 encode (JWT alphabet, no padding). */
+export function base64UrlEncode(s: string): string {
+  return utf8ToBase64(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+/** URL-safe base64 decode → string (or null on malformed input). */
+export function base64UrlDecode(s: string): string | null {
+  const t = s.replace(/-/g, '+').replace(/_/g, '/')
+  try {
+    return base64ToUtf8(t)
+  } catch {
+    return null
+  }
 }
 
 /** Base64 encode/decode (UTF-8 safe, both directions). */
@@ -229,6 +245,77 @@ export const timestamp: ToolFn = {
   },
 }
 
+/** Base64 ⇄ data URL, with automatic mime type detection. */
+function guessMime(text: string): string {
+  if (/^[{\[]/.test(text)) return 'application/json'
+  if (/^<(?:\/?[a-zA-Z][^>]*>|\!)/.test(text)) return 'text/html'
+  return 'text/plain'
+}
+
+export const data_url: ToolFn = {
+  id: 'data_url',
+  nameKey: 'tool.data_url',
+  descKey: 'tool.data_url.desc',
+  category: 'encode',
+  textPayload: true,
+  args: {
+    text: { type: 'string', required: true, description: 'text, or a data: URL to decode' },
+    mime: { type: 'string', description: 'mime type for encoding (auto-detected by default)' },
+    encoding: { type: 'string', default: 'base64', description: 'base64 | plain' },
+  },
+  run({ text, mime, encoding }) {
+    const s = String(text)
+    if (/^data:/i.test(s)) {
+      const m = s.match(/^data:([^;,]*)?(;base64)?,(.*)$/s)
+      if (m === null) return { kind: 'text', text: 'Error: malformed data URL' }
+      const type = m[1] === undefined || m[1] === '' ? 'text/plain' : m[1]!
+      const isBase64 = m[2] === ';base64'
+      const payload = m[3] ?? ''
+      const out: Record<string, string> = { mime: type, encoding: isBase64 ? 'base64' : 'plain', payload }
+      if (isBase64) {
+        try {
+          out['text'] = base64ToUtf8(payload)
+        } catch {
+          // binary payload — keep base64 only
+        }
+      }
+      return { kind: 'json', json: out }
+    }
+    const type = mime !== undefined && String(mime) !== '' ? String(mime) : guessMime(s)
+    if (encoding === 'plain') return { kind: 'text', text: `data:${type},${encodeURIComponent(s)}` }
+    return { kind: 'text', text: `data:${type};base64,${utf8ToBase64(s)}` }
+  },
+}
+
+/** QR code generation (PNG data URL). */
+export const qrcode: ToolFn = {
+  id: 'qrcode',
+  nameKey: 'tool.qrcode',
+  descKey: 'tool.qrcode.desc',
+  category: 'encode',
+  args: {
+    text: { type: 'string', required: true, description: 'content to encode' },
+    size: { type: 'number', default: 256, description: 'image size in px (16-1024)' },
+    margin: { type: 'number', default: 2, description: 'quiet zone modules (0-16)' },
+    errorCorrection: { type: 'string', default: 'M', description: 'L | M | Q | H' },
+  },
+  async run({ text, size, margin, errorCorrection }): Promise<ToolResult> {
+    const s = String(text)
+    if (s === '') return { kind: 'text', text: 'Error: empty content' }
+    const opts: QRCodeToDataURLOptions = {
+      width: Math.max(16, Math.min(1024, Math.floor(Number(size)) || 256)),
+      margin: Math.max(0, Math.min(16, Math.floor(Number(margin)) || 2)),
+      errorCorrectionLevel: ['L', 'M', 'Q', 'H'].includes(String(errorCorrection).toUpperCase()) ? String(errorCorrection).toUpperCase() as 'L' | 'M' | 'Q' | 'H' : 'M',
+    }
+    try {
+      const dataUrl = await QRCode.toDataURL(s, opts)
+      return { kind: 'json', json: { dataUrl, bytes: dataUrl.length, content: s.slice(0, 200) } }
+    } catch (error) {
+      return { kind: 'text', text: `Error: ${error instanceof Error ? error.message : String(error)}` }
+    }
+  },
+}
+
 export const encodeTools: readonly ToolFn[] = Object.freeze([
   base64,
   url,
@@ -236,4 +323,6 @@ export const encodeTools: readonly ToolFn[] = Object.freeze([
   unicode_escape,
   radix,
   timestamp,
+  data_url,
+  qrcode,
 ])
