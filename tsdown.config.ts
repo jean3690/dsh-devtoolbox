@@ -75,6 +75,12 @@ export default defineConfig([
     outDir: 'lib',
     format: ['cjs'],
     platform: 'browser',
+    // `qrcode`'s default entry pulls the Node PNG renderer (`require("fs")`),
+    // which has no seat in the shell's frozen client module table and breaks
+    // loader import. Alias to the browser entry (canvas/svg renderers only) so
+    // the inlined tool implementations stay fs-free. The host half keeps the
+    // real entry and runs the tool on Node.
+    alias: { qrcode: 'qrcode/lib/browser' },
     dts: false,
     sourcemap: true,
     clean: false,
@@ -131,7 +137,19 @@ export default defineConfig([
       entryFileNames: 'client.js',
       banner: `window.__ModuleLoader__.load({ id: ${JSON.stringify(PLUGIN_ID)}, factory: (require) => {`,
       footer: 'return module.exports; } });',
-      intro: 'var module = { exports: {} }; var exports = module.exports;',
+      intro: [
+        'var module = { exports: {} }; var exports = module.exports;',
+        // `yaml` (inlined for the json/yaml tool) calls `require("process")` for
+        // `process.emitWarning`, but the shell's frozen client module table has
+        // no `process` seat. Route that one bare specifier to a minimal shim so
+        // the factory's `require` still answers platform modules normally.
+        'var __origRequire = require;',
+        'var __processShim = { env: {}, platform: "browser", versions: {}, cwd: function () { return "/"; }, emitWarning: function () {}, nextTick: function (fn) { return Promise.resolve().then(fn); } };',
+        // `buffer`: yaml's binary tag probes `Buffer` and falls back to native
+        // atob/btoa when absent, so an empty namespace is enough.
+        'var __shims = { process: __processShim, buffer: {} };',
+        'require = function (id) { return Object.prototype.hasOwnProperty.call(__shims, id) ? __shims[id] : __origRequire(id); };',
+      ].join('\n'),
     },
   },
 ])
